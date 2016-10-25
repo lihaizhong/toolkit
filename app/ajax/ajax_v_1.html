@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<script src="ajax.js"></script>
+<script>
+    window.onload = function () {
+        var HOST = 'http://localhost:3000';
+
+        ajax({
+            url: HOST + '/api/ajax.json',
+            data: {
+                test: 'test'
+            },
+            dataType: 'json',
+            contentType: 'applicaton/json',
+            context: document.body,
+            beforeSend: function (xhr) {
+                console.log('================= beforeSend ================');
+                console.log('context is ' + this);
+                xhr.setRequestHeader('version', '1.0');
+                console.log('================= beforeSend ================');
+            },
+            success: function (result, statusText, xhr) {
+                console.log('================= success ================');
+                console.log(typeof result);
+                console.log(result);
+                document.body.innerHTML = JSON.stringify(result);
+                console.log('================= success ================');
+            },
+            error: function (errorMsg, statusText, xhr) {
+                console.log('================= error ================');
+                console.log(errorMsg);
+                console.log('================= error ================');
+            },
+            complete: function (statusText, xhr) {
+                console.log('================= complete ================');
+                console.log(xhr);
+                console.log(statusText);
+                console.log('type: ' + typeof xhr.getAllResponseHeaders());
+                console.log(xhr.getAllResponseHeaders());
+                console.log(xhr.getResponseHeader('Connection'));
+                console.log('================= complete ================');
+            }
+        })
+    }
+</script>
+</body>
+</html>

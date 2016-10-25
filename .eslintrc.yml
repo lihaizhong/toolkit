@@ -1,0 +1,72 @@
+---
+  root: true
+  env:
+    # 是否在浏览器运行
+    browser: true
+    # 是否支持node环境
+    node: true
+    # 是否支持es6
+    es6: true
+  extends: 'eslint:recommended'
+  parserOptions:
+    sourceType: module
+  # 错误等级（off/0: 关闭规则，warn/1: 开启警告，error/2: 开启错误）
+  # http://eslint.org/docs/rules/
+  rules:
+    # --- POSSIBLE ERROR ---
+    # 禁止状态语句中赋值（default: except-parens），可以在外面添加一对括号
+    # no-cond-assign
+    # 禁止使用console
+    no-console:
+      - warn
+      - allow:
+        - warn
+        - error
+    # 禁止状态语句的判断结果恒定
+    # no-constant-condition
+    # 禁止正则匹配中匹配ASCII范围在 0-31的内容
+    # no-control-regex
+    # 禁止使用debugger
+    # no-debugger
+    # 禁止形参重复
+    # no-dupe-args
+    # 禁止对象中重复的key值
+    # no-dupe-keys
+    # 禁止switch-case中重复case
+    # no-duplicate-case
+    # 禁止正则表达式中的空类（[]）
+    # no-empty-character-class
+    # 禁止空块级语句（正确写法：if (condition) {// empty}/if (condition) {/* empty */}）
+    no-empty:
+      - error
+      - allowEmptyCatch: true
+    # 禁止对错误信息重新赋值
+    # no-ex-assign
+    # 禁止没必要的boolean转换
+    # no-extra-boolean-cast
+    # 禁止多余的括号
+    # no-extra-parens
+    # 禁止没必要的分号
+    # no-extra-semi
+    # 禁止方法赋值
+    # no-func-assign
+    # 禁止内部申明
+    # no-inner-declarations
+    # 禁止无效的正则表达式
+    # no-invalid-regexp
+    # --- BEST PRACTICES ---
+    # 缩进格式 4个空格
+    indent:
+      - error
+      - 4
+    linebreak-style:
+      - error
+      - unix
+    # 字符串引号 单引号
+    quotes:
+      - error
+      - single
+    # 分号 总是添加
+    semi:
+      - error
+      - always
