@@ -5,11 +5,12 @@
 var fs = require("fs");
 var crypto = require("crypto");
 var path = require("path");
+
 var _ = require("underscore");
 
 require("colors");
 
-var info = {
+var print = {
     log: function (msg) {
         console.log(msg);
     },
@@ -28,20 +29,11 @@ var type = {
     base : function(obj) {
         return Object.prototype.toString.call(obj).slice(8, -1).toLowerCase();
     },
-    isFunction: function(fn) {
-        return this.base(fn) === 'function';
-    },
-    isObject: function(obj) {
-        return this.base(obj) === 'object';
-    },
     isArray: function(arr) {
         return this.base(arr) === 'array';
     },
     isString: function(str) {
         return this.base(str) === 'string';
-    },
-    isNumber: function(num) {
-        return !isNaN(num);
     }
 }
 
@@ -68,7 +60,7 @@ var iterateFile = function (base, src) {
             result.push(src);
         }
     } catch (ex) {
-        info.error(ex);
+        print.error(ex);
     }
 
     return result;
@@ -96,22 +88,22 @@ Fingerprint.prototype = {
 
         //- 基础参数设置 start
         if (this.opts.base == '')
-            info.error('base不能为空!');
+            print.error('base不能为空!');
         else if ( !type.isString(this.opts.base) )
-            info.error('base必须是url字符串!');
+            print.error('base必须是url字符串!');
 
         if ( !type.isString(this.opts.mapping) )
-            info.error('mapping必须是url字符串!');
+            print.error('mapping必须是url字符串!');
 
         if ( type.isString(this.opts.src) )
             this.opts.src = [this.opts.src];
         else if ( !type.isArray(this.opts.src) )
-            info.error('src必须是url字符串或者url数组');
+            print.error('src必须是url字符串或者url数组');
 
         if ( type.isString(this.opts.dist) )
             this.opts.dist = [this.opts.dist];
         else if ( !type.isArray(this.opts.dist) )
-            info.error('dist必须是url字符串或者url数组');
+            print.error('dist必须是url字符串或者url数组');
 
         //- 基础参数设置 end
 
@@ -151,8 +143,8 @@ Fingerprint.prototype = {
 
         filePathList = filePathList.filter(function(val) {return val != undefined;});
 
-        info.info('目标路径: ' + handlerPath + '\n查找文件完成, 共有文件数：' + filePathList.length);
-        info.assert(filePathList.length, '目标路径: ' + handlerPath + '\n没有遍历到任何文件!');
+        print.info('目标路径: ' + handlerPath + '\n查找文件完成, 共有文件数：' + filePathList.length);
+        print.assert(filePathList.length, '目标路径: ' + handlerPath + '\n没有遍历到任何文件!');
 
         return filePathList;
     },
@@ -165,7 +157,7 @@ Fingerprint.prototype = {
             mapping[file] = '';
         });
 
-        info.info('清除文件指纹完成!');
+        print.info('清除文件指纹完成!');
 
         return mapping;
     },
@@ -183,7 +175,7 @@ Fingerprint.prototype = {
             // 保存文件的相对路径
             mapping[file] = hash.digest('hex');
         })
-        info.info('生成文件指纹完成!');
+        print.info('生成文件指纹完成!');
 
         return mapping;
     },
@@ -202,19 +194,19 @@ Fingerprint.prototype = {
                 _mapping = JSON.parse(_mapping);
 
                 if (_mapping == mapping) {
-                    info.info(_mappingPath + '无更新!');
+                    print.info(_mappingPath + '无更新!');
                     return;
                 } else {
-                    info.info(_mappingPath + '已更新!');
+                    print.info(_mappingPath + '已更新!');
                 }
             }
         } catch (ex) {
-            info.info(_mappingPath + '已创建!');
+            print.info(_mappingPath + '已创建!');
         } finally {
             // 将数据异步写入mapping.json
             buff = new Buffer( JSON.stringify(mapping, null, 4) );
             fs.writeFile(_mappingPath, buff);
-            info.info(_mappingPath + '更新完成!');
+            print.info(_mappingPath + '更新完成!');
         }
     },
     /**** ?遍历并修改文件指纹 ****/
@@ -222,7 +214,7 @@ Fingerprint.prototype = {
         var self = this, updateFileCount = 0;
 
         distFilePathList.forEach(function(distFilePath) {
-            info.log(distFilePath + '更新中...');
+            print.log(distFilePath + '更新中...');
             var isChange = false;
             // 获得待更新文件的绝对路径
             var _distPath = path.join(basePath, distFilePath);
@@ -250,14 +242,14 @@ Fingerprint.prototype = {
             if (isChange) {
                 // 更新文件
                 fs.writeFileSync(_distPath, fileContent);
-                info.log(distFilePath + '更新完成!');
+                print.log(distFilePath + '更新完成!');
                 updateFileCount++;
             } else {
-                info.log(distFilePath + '未更新!');
+                print.log(distFilePath + '未更新!');
             }
         });
 
-        info.info('文件更新完成!\n共更新文件数：' + updateFileCount);
+        print.info('文件更新完成!\n共更新文件数：' + updateFileCount);
     }
 }
 
