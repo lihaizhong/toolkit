@@ -4,7 +4,7 @@
 
 var assert = require('assert');
 
-require('./ajax');
+require('./ajax_v_1');
 
 var HOST = 'localhost:3000';
 

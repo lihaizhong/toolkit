@@ -1,26 +1,10 @@
 /**
  * Created by sky on 16/10/13.
- * Ajax level 1 Implemention
+ * Ajax Level 1 Implemention
  */
 
-(function (global) {
+;(function (global) {
     'use strict';
-
-    // 常用工具集
-    var util = {
-        getBaseType: function (o) {
-            return Object.prototype.toString.call(o).slice(8, -1).toLowerCase();
-        },
-        isObject: function (o) {
-            return this.getBaseType(o) === 'object';
-        },
-        isFunction: function (fn) {
-            return typeof fn === 'function';
-        },
-        isString: function (str) {
-            return typeof str === 'string';
-        }
-    };
 
     // Ajax 构造函数
     function Ajax(options) {
@@ -52,6 +36,22 @@
         complete: null
     };
 
+    // 常用工具集
+    Ajax.util = {
+        getBaseType: function (o) {
+            return Object.prototype.toString.call(o).slice(8, -1).toLowerCase();
+        },
+        isObject: function (o) {
+            return this.getBaseType(o) === 'object';
+        },
+        isFunction: function (fn) {
+            return typeof fn === 'function';
+        },
+        isString: function (str) {
+            return typeof str === 'string';
+        }
+    };
+
     /**
      * 数据扩展合并（浅拷贝）
      * @param target
@@ -64,17 +64,18 @@
             return {};
         }
 
-        if (util.isObject(target)) {
+        if (Ajax.util.isObject(target)) {
             target = {};
         }
 
         for (; i < len; i++) {
             item = arguments[i];
-            if (util.isObject(item)) {
-                for (key in item) {
-                    if (item.hasOwnProperty(key)) {
-                        target[key] = item[key];
-                    }
+            if (!Ajax.util.isObject(item) || item === Ajax || item === Ajax.prototype || target === item) {
+                continue;
+            }
+            for (key in item) {
+                if (item.hasOwnProperty(key)) {
+                    target[key] = item[key];
                 }
             }
         }
@@ -91,11 +92,11 @@
     Ajax.addURLParams = function (url, params, cache) {
         var name, value;
 
-        if (!util.isString(url)) {
+        if (!Ajax.util.isString(url)) {
             throw new Error('url必须是字符串!');
         }
 
-        if (util.isObject(params)) {
+        if (Ajax.util.isObject(params)) {
             // 将参数追加到url后面
             for (name in params) {
                 value = params[name];
@@ -124,7 +125,7 @@
     Ajax.setRequestHeaders = function (xhr, headers) {
         var key, value;
 
-        if (util.isObject(headers)) {
+        if (Ajax.util.isObject(headers)) {
             for (key in headers) {
                 value = headers[key];
 
@@ -180,7 +181,7 @@
             self._onreadyStateChange();
 
             // 非法url处理
-            if (!(util.isString(url) && url != '')) {
+            if (!(Ajax.util.isString(url) && url != '')) {
                 url = global.location.href;
             }
 
@@ -199,7 +200,7 @@
          */
         abort: function () {
             var xhr = this.xhr;
-            if (util.isObject(xhr)) {
+            if (Ajax.util.isObject(xhr)) {
                 xhr.abort();
                 xhr = null;
             }
@@ -257,7 +258,7 @@
             // 设置自定义头部信息
             Ajax.setRequestHeaders(xhr, headers);
             xhr.responseType = setting.dataType;
-            util.isFunction(beforeSend) && beforeSend.call(setting.context, xhr);
+            Ajax.util.isFunction(beforeSend) && beforeSend.call(setting.context, xhr);
         },
         /**
          * readyState 4
@@ -278,13 +279,13 @@
 
             if (status >= 200 && status < 300 || status == 304) { // 响应成功
                 responseData = Ajax.getResponseData(xhr);
-                util.isFunction(success) && success.call(context, responseData, statusText, xhr);
+                Ajax.util.isFunction(success) && success.call(context, responseData, statusText, xhr);
 
             } else { // 响应失败
-                util.isFunction(error) && error.call(context, responseData, statusText, xhr);
+                Ajax.util.isFunction(error) && error.call(context, responseData, statusText, xhr);
             }
             // 响应完成
-            util.isFunction(complete) && complete.call(context, statusText, xhr);
+            Ajax.util.isFunction(complete) && complete.call(context, statusText, xhr);
         }
     };
 
@@ -302,11 +303,13 @@
      * ajax 扩展
      * @type {any}
      */
-    ajax.extend = function () {
+    ajax.extend = function (isStatic) {
         var args = Array.prototype.slice.call(arguments),
-            exts = args[0] == Ajax.prototype ? args : [Ajax.prototype].concat(args);
+            // isStatic 是否添加到静态方法中
+            exts = isStatic === true ? [Ajax].concat(args.slice(1)): [Ajax.prototype].concat(args);
+
         Ajax.extend.apply(Ajax, exts);
     };
 
     global.ajax = ajax;
-})(window || global);
+})(window);
