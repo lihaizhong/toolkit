@@ -220,7 +220,7 @@
                         break;
                     // 启动。已经调用open方法，但尚未调用send方法。
                     case 1:
-                        self._startOpen();
+                        self._open();
                         break;
                     // 发送。已经调用send方法，但尚未接收到响应。
                     case 2:
@@ -240,7 +240,7 @@
          * open方法启动后，send方法启动前，才能设置http header头信息
          * @private
          */
-        _startOpen: function () {
+        _open: function () {
             var self = this,
                 xhr = self.xhr,
                 setting = self._setting,
@@ -277,15 +277,19 @@
                 statusText = xhr.statusText,
                 responseData;
 
-            if (status >= 200 && status < 300 || status == 304) { // 响应成功
-                responseData = Ajax.getResponseData(xhr);
-                Ajax.util.isFunction(success) && success.call(context, responseData, statusText, xhr);
+            try {
+                if (status >= 200 && status < 300 || status == 304) { // 响应成功
+                    responseData = Ajax.getResponseData(xhr);
+                    Ajax.util.isFunction(success) && success.call(context, responseData, statusText, xhr);
 
-            } else { // 响应失败
-                Ajax.util.isFunction(error) && error.call(context, responseData, statusText, xhr);
+                } else { // 响应失败
+                    Ajax.util.isFunction(error) && error.call(context, responseData, statusText, xhr);
+                }
+                // 响应完成
+                Ajax.util.isFunction(complete) && complete.call(context, statusText, xhr);
+            } catch(ex) {
+                console.log(ex);
             }
-            // 响应完成
-            Ajax.util.isFunction(complete) && complete.call(context, statusText, xhr);
         }
     };
 
@@ -297,18 +301,6 @@
     var ajax = function (options) {
         // 返回ajax实例
         return new Ajax(options);
-    };
-
-    /**
-     * ajax 扩展
-     * @type {any}
-     */
-    ajax.extend = function (isStatic) {
-        var args = Array.prototype.slice.call(arguments),
-            // isStatic 是否添加到静态方法中
-            exts = isStatic === true ? [Ajax].concat(args.slice(1)): [Ajax.prototype].concat(args);
-
-        Ajax.extend.apply(Ajax, exts);
     };
 
     global.ajax = ajax;
