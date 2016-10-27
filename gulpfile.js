@@ -38,3 +38,14 @@ gulp.task('webserver', function () {
 
 gulp.task('default', ['webserver']);
 
+gulp.task('compress', function () {
+    gulp.src('app/adaptor/*.js')
+        .pipe($.minify({
+            ext: {
+                src: '.js',
+                min: '.min.js'
+            }
+        }))
+        .pipe(gulp.dest('app/adaptor'));
+});
+
