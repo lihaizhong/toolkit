@@ -28,7 +28,7 @@ gulp.task('webserver', function () {
                 enable: true,
                 path: './app'
             },
-            fallback: './index.html',
+            fallback: 'error.html',
             open: true,
             https: false,
             middleware: middleware,
