@@ -36,18 +36,21 @@ gulp.task('webserver', function () {
         }));
 });
 
-gulp.task('default', ['webserver']);
-
 gulp.task('compress', function () {
-    gulp.src(['app/**/*.js'])
+    gulp.src(['app/**/*.js', '!app/**/*.min.js', '!app/**/*.test.js'])
         .pipe($.minify({
             ext: {
                 src: '.js',
                 min: '.min.js'
             },
-            exclude: ['test'],
+            exclude: ['test', 'nodejs'],
             ignoreFiles: ['.min.js', '.test.js']
         }))
         .pipe(gulp.dest('app'));
 });
+
+
+
+gulp.task('default', ['webserver']);
+
 
