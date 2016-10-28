@@ -9,7 +9,7 @@ var fs = require('fs');
 var gulp = require('gulp');
 var $ = require('gulp-load-plugins')();
 
-var middleware = require('./middleware')();
+var middleware = require('./gulp-middleware')();
 
 
 gulp.task('webserver', function () {
@@ -39,13 +39,15 @@ gulp.task('webserver', function () {
 gulp.task('default', ['webserver']);
 
 gulp.task('compress', function () {
-    gulp.src('app/adaptor/*.js')
+    gulp.src(['app/**/*.js'])
         .pipe($.minify({
             ext: {
                 src: '.js',
                 min: '.min.js'
-            }
+            },
+            exclude: ['test'],
+            ignoreFiles: ['.min.js', '.test.js']
         }))
-        .pipe(gulp.dest('app/adaptor'));
+        .pipe(gulp.dest('app'));
 });
 
