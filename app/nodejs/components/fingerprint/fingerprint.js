@@ -5,12 +5,11 @@
 var fs = require("fs");
 var crypto = require("crypto");
 var path = require("path");
-
 var _ = require("underscore");
 
 require("colors");
 
-var print = {
+var info = {
     log: function (msg) {
         console.log(msg);
     },
@@ -23,24 +22,33 @@ var print = {
     error: function (err) {
         if (err) throw new Error(err);
     }
-}
+};
 
 var type = {
     base : function(obj) {
         return Object.prototype.toString.call(obj).slice(8, -1).toLowerCase();
+    },
+    isFunction: function(fn) {
+        return this.base(fn) === 'function';
+    },
+    isObject: function(obj) {
+        return this.base(obj) === 'object';
     },
     isArray: function(arr) {
         return this.base(arr) === 'array';
     },
     isString: function(str) {
         return this.base(str) === 'string';
+    },
+    isNumber: function(num) {
+        return !isNaN(num);
     }
-}
+};
 
 /* 迭代目录 */
 var iterateFile = function (base, src) {
     var result = [],
-    // 目录文件的绝对路径
+        // 目录文件的绝对路径
         srcPath = path.join(base, src),
         subResult, stat, files;
 
@@ -54,23 +62,23 @@ var iterateFile = function (base, src) {
                 // 递归目录
                 subResult = iterateFile(base, srcPath);
                 result = result.concat(subResult);
-
             })
         } else if ( stat.isFile() ) {
             result.push(src);
         }
     } catch (ex) {
-        print.error(ex);
+        info.error(ex);
     }
 
     return result;
-}
+};
 
 
 
 var Fingerprint  = function (options) {
     this.opts = _.extend({}, Fingerprint.default, options);
-}
+    this.init();
+};
 
 // 其他路径是基于base路径进行的扩展
 Fingerprint.default = {
@@ -78,7 +86,7 @@ Fingerprint.default = {
     src: '',    // 可选
     dist:'',    // 可选
     mapping: '' // 可选
-}
+};
 
 Fingerprint.prototype = {
     /**** ?初始化 ****/
@@ -88,22 +96,22 @@ Fingerprint.prototype = {
 
         //- 基础参数设置 start
         if (this.opts.base == '')
-            print.error('base不能为空!');
+            info.error('base不能为空!');
         else if ( !type.isString(this.opts.base) )
-            print.error('base必须是url字符串!');
+            info.error('base必须是url字符串!');
 
         if ( !type.isString(this.opts.mapping) )
-            print.error('mapping必须是url字符串!');
+            info.error('mapping必须是url字符串!');
 
         if ( type.isString(this.opts.src) )
             this.opts.src = [this.opts.src];
         else if ( !type.isArray(this.opts.src) )
-            print.error('src必须是url字符串或者url数组');
+            info.error('src必须是url字符串或者url数组');
 
         if ( type.isString(this.opts.dist) )
             this.opts.dist = [this.opts.dist];
         else if ( !type.isArray(this.opts.dist) )
-            print.error('dist必须是url字符串或者url数组');
+            info.error('dist必须是url字符串或者url数组');
 
         //- 基础参数设置 end
 
@@ -122,29 +130,26 @@ Fingerprint.prototype = {
     findFiles: function(basePath, handlerPath) {
         var self = this,
             filePathList = [],
-            _filePathList, filterFiles = [], index;
+            _filePathList, filterFiles = [], idx,  i;
 
-        handlerPath.forEach(function(_handlerPath) {
-            if ( /^!/.test(_handlerPath) ) {
-                filterFiles.push(_handlerPath.substring(1));
-                return true;
+        for (i = 0; i < handlerPath.length; i++) {
+            if ( /^!/.test(handlerPath[i]) ) {
+                filterFiles.push(handlerPath[i].substring(1));
+                continue;
             }
-            _filePathList = iterateFile(basePath, _handlerPath);
+            _filePathList = iterateFile(basePath, handlerPath[i]);
             filePathList = filePathList.concat(_filePathList);
-        });
+        }
 
-        // 过滤
-        filterFiles.forEach(function(filterFile) {
-            filePathList.forEach(function(filePath) {
-                index = filePath.indexOf(filterFile);
-                if(index == 0) delete filePathList[index];
-            });
-        });
+        for (i = 0; i < filterFiles.length; i++) {
+            idx = filePathList.indexOf(filterFiles[i]);
+            if (idx != -1) delete filePathList[idx];
+        }
 
         filePathList = filePathList.filter(function(val) {return val != undefined;});
 
-        print.info('目标路径: ' + handlerPath + '\n查找文件完成, 共有文件数：' + filePathList.length);
-        print.assert(filePathList.length, '目标路径: ' + handlerPath + '\n没有遍历到任何文件!');
+        info.info('目标路径: ' + handlerPath + '\n查找文件完成, 共有文件数：' + filePathList.length);
+        info.assert(filePathList.length, '目标路径: ' + handlerPath + '\n没有遍历到任何文件!');
 
         return filePathList;
     },
@@ -157,7 +162,7 @@ Fingerprint.prototype = {
             mapping[file] = '';
         });
 
-        print.info('清除文件指纹完成!');
+        info.info('清除文件指纹完成!');
 
         return mapping;
     },
@@ -175,14 +180,14 @@ Fingerprint.prototype = {
             // 保存文件的相对路径
             mapping[file] = hash.digest('hex');
         })
-        print.info('生成文件指纹完成!');
+        info.info('生成文件指纹完成!');
 
         return mapping;
     },
     /**** ?更新mapping ****/
     createMapping: function (mapping, basePath, mappingPath) {
         var self = this,
-        // mapping.json的绝对路径
+            // mapping.json的绝对路径
             _mappingPath = path.join(basePath, mappingPath, 'mapping.json'),
             stat, _mapping, buff, key;
 
@@ -194,19 +199,19 @@ Fingerprint.prototype = {
                 _mapping = JSON.parse(_mapping);
 
                 if (_mapping == mapping) {
-                    print.info(_mappingPath + '无更新!');
+                    info.info(_mappingPath + '无更新!');
                     return;
                 } else {
-                    print.info(_mappingPath + '已更新!');
+                    info.info(_mappingPath + '已更新!');
                 }
             }
         } catch (ex) {
-            print.info(_mappingPath + '已创建!');
+            info.info(_mappingPath + '已创建!');
         } finally {
             // 将数据异步写入mapping.json
             buff = new Buffer( JSON.stringify(mapping, null, 4) );
             fs.writeFile(_mappingPath, buff);
-            print.info(_mappingPath + '更新完成!');
+            info.info(_mappingPath + '更新完成!');
         }
     },
     /**** ?遍历并修改文件指纹 ****/
@@ -214,7 +219,7 @@ Fingerprint.prototype = {
         var self = this, updateFileCount = 0;
 
         distFilePathList.forEach(function(distFilePath) {
-            print.log(distFilePath + '更新中...');
+            info.log(distFilePath + '更新中...');
             var isChange = false;
             // 获得待更新文件的绝对路径
             var _distPath = path.join(basePath, distFilePath);
@@ -242,16 +247,16 @@ Fingerprint.prototype = {
             if (isChange) {
                 // 更新文件
                 fs.writeFileSync(_distPath, fileContent);
-                print.log(distFilePath + '更新完成!');
+                info.info(distFilePath + '更新完成!');
                 updateFileCount++;
             } else {
-                print.log(distFilePath + '未更新!');
+                info.log(distFilePath + '未更新!');
             }
         });
 
-        print.info('文件更新完成!\n共更新文件数：' + updateFileCount);
+        info.info('文件更新完成!\n共更新文件数：' + updateFileCount);
     }
-}
+};
 
 module.exports = function(options) {
     return new Fingerprint(options);

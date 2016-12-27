@@ -95,18 +95,18 @@
 
     window.db = function (isForeverStore) {
         var store = isForeverStore ? window.localStorage : window.sessionStorage,
-            storageTest = 'storage_' + new Date().getTime();
+            storageTest = 'storageTest_' + new Date().getTime();
 
         if (store) {
             try {
                 store.setItem(storageTest, storageTest);
                 store.removeItem(storageTest);
             } catch (ex) {
-                console.log(ex);
-                alert('关闭浏览器的无痕模式再试试哦~~');
+                console.error(ex);
+                alert('关闭浏览器的无痕模式试试吧~~');
             }
         } else {
-            alert('浏览器不支持' + (isForeverStore ? 'localStorage' : 'sessionStorage') + '呢!\n跟换浏览器试试~~');
+            alert('浏览器不支持' + (isForeverStore ? 'localStorage' : 'sessionStorage') + '哦!\n换个浏览器试试~~');
         }
 
         return new DataBase(store);

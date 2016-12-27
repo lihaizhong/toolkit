@@ -3,6 +3,8 @@
   env:
     # 是否在浏览器运行
     browser: true
+    # jquery 环境
+    jquery: true
     # 是否支持node环境
     node: true
     # 是否支持es6
@@ -55,7 +57,9 @@
     # 禁止无效的正则表达式
     ##TODO no-invalid-regexp
     # 禁止异常的空白符
-    ##TODO no-irregular-whitespace
+    no-irregular-whitespace:
+      - error
+      - skipComments: true
     # 禁止调用全局对象属性作为方法
     ##TODO no-obj-calls
     # 禁止直接使用Object.prototype内建的方法
@@ -122,7 +126,9 @@
     # 禁止声明而从未使用的变量
     no-unused-vars:
       - error
-      - local
+      -
+        vars: local
+        varsIgnorePattern: 'ignore'
     # --- NODE.JS & COMMONJS --- #
     # --- STYLISTIC ISSUES --- #
     # 禁止在缩进时混合使用spaces和tabs
