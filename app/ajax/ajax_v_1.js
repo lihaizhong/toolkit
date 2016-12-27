@@ -287,8 +287,8 @@
                 }
                 // 响应完成
                 Ajax.util.isFunction(complete) && complete.call(context, statusText, xhr);
-            } catch(ex) {
-                console.log(ex);
+            } catch (ex) {
+                console.error(ex);
             }
         }
     };

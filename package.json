@@ -4,7 +4,7 @@
   "description": "tookit",
   "main": "gulpfile.js",
   "scripts": {
-    "lint": "eslint **/*.js",
+    "lint": "eslint ./app/**/*.js",
     "build": "npm install sass -g && npm rebuild node-sass && npm install"
   },
   "author": "sky",
