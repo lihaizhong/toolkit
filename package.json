@@ -8,24 +8,5 @@
     "build": "npm install sass -g && npm rebuild node-sass && npm install"
   },
   "author": "sky",
-  "license": "ISC",
-  "devDependencies": {
-    "autoprefixer": "^6.6.0",
-    "colors": "^1.1.2",
-    "eslint": "^3.7.1",
-    "gulp": "^3.9.1",
-    "gulp-clean-css": "^2.3.2",
-    "gulp-csscomb": "^3.0.8",
-    "gulp-eslint": "^3.0.1",
-    "gulp-livereload": "^3.8.1",
-    "gulp-load-plugins": "^1.3.0",
-    "gulp-minify": "0.0.14",
-    "gulp-postcss": "^6.2.0",
-    "gulp-sass": "^3.0.0",
-    "gulp-sourcemap": "^1.0.1",
-    "gulp-sourcemaps": "^1.9.1",
-    "gulp-watch": "^4.3.10",
-    "gulp-webserver": "^0.9.1",
-    "underscore": "^1.8.3"
-  }
+  "license": "ISC"
 }
