@@ -23,7 +23,7 @@
     // 获取设备的宽度
     var clientWidth = window.screen.width;
     if (!clientWidth) return;
-    docEl.style.fontSize = 100 * (clientWidth / maxWidth) + 'px';
+    docEl.style.fontSize = (100 * (clientWidth / maxWidth)) + 'px';
     // window.devicePixelRatio是设备上物理像素和设备独立像素(device-independent pixels (dips))的比例。
     // 公式就是: window.devicePixelRatio = 物理像素 / dips (非视网膜屏为1， 视网膜屏为2)
     docEl.setAttribute('dpr', window.devicePixelRatio || 1);
