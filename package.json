@@ -8,5 +8,12 @@
     "build": "npm install sass -g && npm rebuild node-sass && npm install"
   },
   "author": "sky",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-eslint": "^8.1.2",
+    "eslint": "^4.14.0",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.8.0"
+  }
 }
