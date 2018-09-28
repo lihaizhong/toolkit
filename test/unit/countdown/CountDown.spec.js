@@ -75,6 +75,12 @@ describe('【CountDown】set datetime', function () {
     cd.init()
   })
 
+  it('#setRemainTime <0', function () {
+    const remain = -2000
+    cd.setRemainTime(remain)
+    expect(cd._remain).to.equal(0)
+  })
+
   it('#setRemainTime', function () {
     const remain = 40000
     cd.setRemainTime(remain)
@@ -152,8 +158,8 @@ describe('【CountDown】add symbol', function () {
     expect(breakpoint.expires).to.equal(Infinity)
   })
 
-  it('#registerSymbol remain:10000!5000', function () {
-    const point = 'remain:10000!5000'
+  it('#registerSymbol remain:10000!R5000', function () {
+    const point = 'remain:10000!R5000'
     const COUNTDOWN_REMAIN_SYMBOL = cd.registerSymbol(point)
     const breakpoint = cd._breakpoint[point]
 

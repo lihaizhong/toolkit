@@ -26,27 +26,79 @@ module.exports = function(config) {
     // list of files / patterns to exclude
     exclude: [
       'test/karma.conf.js',
-      'test/webpack.test.conf.js'
+      'test/webpack.test.conf.js',
+      'tools/ajax/**/*.js',
+      'tools/adapter.js',
+      'tools/storage.js'
     ],
 
 
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      'test/unit/**/*.js': ['webpack'],
-      'tools/**/*.js': ['webpack', 'coverage']
+      'test/unit/**/*.js': ['webpack', 'sourcemap'],
+      'tools/**/*.js': ['webpack', 'sourcemap']
     },
 
 
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-    reporters: ['progress', 'mocha', 'coverage'],
+    reporters: ['progress', 'coverage-istanbul'],
 
 
-    coverageReporter: {
-      type: 'html',
-      dir: 'coverage/'
+    coverageIstanbulReporter: {
+      // reports can be any that are listed here: https://github.com/istanbuljs/istanbuljs/tree/aae256fb8b9a3d19414dcf069c592e88712c32c6/packages/istanbul-reports/lib
+      reports: ['html', 'text-summary'],
+
+      // base output directory. If you include %browser% in the path it will be replaced with the karma browser name
+      dir: path.join(__dirname, '../coverage'),
+
+      // Combines coverage information from multiple browsers into one report rather than outputting a report
+      // for each browser.
+      combineBrowserReports: true,
+
+      // if using webpack and pre-loaders, work around webpack breaking the source path
+      fixWebpackSourcePaths: true,
+
+      // Omit files with no statements, no functions and no branches from the report
+      skipFilesWithNoCoverage: true,
+
+      // Most reporters accept additional config options. You can pass these through the `report-config` option
+      'report-config': {
+        // all options available at: https://github.com/istanbuljs/istanbuljs/blob/aae256fb8b9a3d19414dcf069c592e88712c32c6/packages/istanbul-reports/lib/html/index.js#L135-L137
+        html: {
+          // outputs the report in ./coverage/html
+          subdir: 'html'
+        }
+      },
+
+      // enforce percentage thresholds
+      // anything under these percentages will cause karma to fail with an exit code of 1 if not running in watch mode
+      // thresholds: {
+      //   emitWarning: true, // set to `true` to not fail the test command when thresholds are not met
+      //   // thresholds for all files
+      //   global: {
+      //     statements: 30,
+      //     lines: 30,
+      //     branches: 30,
+      //     functions: 30
+      //   },
+      //   // thresholds per file
+      //   each: {
+      //     statements: 30,
+      //     lines: 30,
+      //     branches: 30,
+      //     functions: 30,
+      //     overrides: {
+      //       'tools/**/*.js': {
+      //         statements: 30
+      //       }
+      //     }
+      //   }
+      // },
+
+      // verbose: true // output config used by istanbul for debugging
     },
 
 
