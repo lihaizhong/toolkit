@@ -42,28 +42,74 @@ describe('【CountDown】remain time format', function () {
   })
 })
 
-describe('【CountDown】set time format', function () {
-  it('#static:setTimeFormat NaN', function () {
-    const timestamp = CountDown.setTimeFormat()
+describe('【CountDown】standard date string format', function () {
+  const cd = new CountDown()
+
+  afterEach(function () {
+    cd.init()
+  })
+
+  it('#formatStandardDate number', function () {
+    let now = new Date()
+
+    let format = CountDown.formatStandardDate(now.getTime())
+
+    let year = now.getFullYear()
+    let month = CountDown.formatTime(now.getMonth() + 1)
+    let day = CountDown.formatTime(now.getDate())
+    let hour = CountDown.formatTime(now.getHours())
+    let minute = CountDown.formatTime(now.getMinutes())
+    let second = CountDown.formatTime(now.getSeconds())
+    let dateStr = `${ year }-${ month }-${ day } ${ hour }:${ minute }:${ second }`
+    expect(format).to.equal(CountDown.DateStringFixed(dateStr))
+  })
+
+  it('#formatStandardDate string', function () {
+    let dateStr = '2018-10-08 16:00'
+
+    let format = CountDown.formatStandardDate(dateStr)
+
+    expect(format).to.equal(CountDown.DateStringFixed(dateStr))
+  })
+
+  it('#formatStandardDate date', function () {
+    let now = new Date()
+
+    let format = CountDown.formatStandardDate(now)
+
+    let year = now.getFullYear()
+    let month = CountDown.formatTime(now.getMonth() + 1)
+    let day = CountDown.formatTime(now.getDate())
+    let hour = CountDown.formatTime(now.getHours())
+    let minute = CountDown.formatTime(now.getMinutes())
+    let second = CountDown.formatTime(now.getSeconds())
+    let dateStr = `${ year }-${ month }-${ day } ${ hour }:${ minute }:${ second }`
+    expect(format).to.equal(CountDown.DateStringFixed(dateStr))
+  })
+})
+
+describe('【CountDown】formatTimestamp', function () {
+  it('#static:formatTimestamp NaN', function () {
+    const timestamp = CountDown.formatTimestamp()
     expect(timestamp).to.be.equal(parseInt(Date.now() / 1000) * 1000)
   })
 
-  it('#static:setTimeFormat Date', function () {
+  it('#static:formatTimestamp Date', function () {
     const date = new Date('2018-09-26T08:00')
-    const timestamp = CountDown.setTimeFormat(date)
+    const timestamp = CountDown.formatTimestamp(date)
     expect(timestamp).to.be.equal(date.getTime())
   })
 
-  it('#static:setTimeFormat Number', function () {
+  it('#static:formatTimestamp Number', function () {
     const time = '500000'
-    const timestamp = CountDown.setTimeFormat(time)
+    const timestamp = CountDown.formatTimestamp(time)
     expect(timestamp).to.be.equal(Number(time))
   })
 
-  it('#static:setTimeFormat String', function () {
+  it('#static:formatTimestamp String', function () {
     const dateStr = '2018-09-27 12:00'
     const time = new Date('2018-09-27T12:00').getTime()
-    const timestamp = CountDown.setTimeFormat(dateStr)
+    const timestamp = CountDown.formatTimestamp(dateStr)
     expect(timestamp).to.be.equal(time)
   })
 })
@@ -211,9 +257,191 @@ describe('【CountDown】add symbol', function () {
 describe('【CountDown】get breakpoint symbol list', function () {
   const cd = new CountDown()
 
-  this.afterEach(function () {
+  afterEach(function () {
     cd.init()
   })
 
-  // it('#_getBreakPointSymbol ')
+  it('#_getBreakPointSymbols not symbols', function () {
+    expect(cd._getBreakPointSymbols()).to.be.empty
+    expect(cd._getBreakPointSymbols()).to.eql([])
+
+    expect(cd._getBreakPointSymbols(true)).to.be.empty
+    expect(cd._getBreakPointSymbols(true)).to.eql([])
+  })
+
+  it('#_getBreakPointSymbols finished symbol', function (done) {
+    let CountDownFinishedSymnbol = cd.registerFinishedSymbol()
+
+    cd.setRemainTime(1000)
+
+    cd.setCallback((remainVo, includeSymbol) => {
+      if (remainVo.remain === 0) {
+        console.log('倒计时完成')
+        expect(includeSymbol(CountDownFinishedSymnbol)).to.be.true
+        done()
+      } else {
+        console.log('倒计时正在继续')
+        expect(includeSymbol(CountDownFinishedSymnbol)).to.be.false
+      }
+    })
+
+    cd.start()
+  })
+
+  it('#_getBreakPointSymbols unstart symbol', function (done) {
+    let CountDownUnstartSymbol = cd.registerUnstartSymbol()
+
+    let now = Date.now()
+    cd.setTime(new Date(now + 86400000), new Date(now + 691200000), now)
+
+    cd.setCallback((remainVo, includeSymbol) => {
+      if (remainVo.remain >= 604800) {
+        console.log('倒计时未开始')
+        expect(includeSymbol(CountDownUnstartSymbol)).to.be.true
+        done()
+      }
+    })
+
+    cd.start()
+  })
+
+  it('#_getBreakPointSymbols custom symbol 0', function (done) {
+    let CountDownRemain10Symbol = cd.registerSymbol('remain:10000')
+
+    cd.setRemainTime(12000)
+
+    cd.setCallback((remainVo, includeSymbol) => {
+      if (remainVo.remain === 10) {
+        expect(includeSymbol(CountDownRemain10Symbol)).to.be.true
+      } else {
+        expect(includeSymbol(CountDownRemain10Symbol)).to.be.false
+      }
+
+      if (remainVo.remain <= 0) {
+        done()
+      }
+    })
+
+    cd.start()
+  })
+
+  it('#_getBreakPointSymbols custom symbol 1', function (done) {
+    let CountDownRemain10Symbol = cd.registerSymbol('remain:10000!')
+
+    cd.setRemainTime(12000)
+
+    cd.setCallback((remainVo, includeSymbol) => {
+      if (remainVo.remain <= 10) {
+        expect(includeSymbol(CountDownRemain10Symbol)).to.be.true
+      } else {
+        expect(includeSymbol(CountDownRemain10Symbol)).to.be.false
+      }
+
+      if (remainVo.remain <= 0) {
+        done()
+      }
+    })
+
+    cd.start()
+  })
+
+  it('#_getBreakPointSymbols custom symbol 2', function (done) {
+    let CountDownRemain10_5Symbol = cd.registerSymbol('remain:10000!R5000')
+
+    cd.setRemainTime(12000)
+
+    cd.setCallback((remainVo, includeSymbol) => {
+      // console.log(JSON.stringify(remainVo))
+      // console.log(JSON.stringify(cd._breakpoint))
+      if (remainVo.remain <= 10 && remainVo.remain >= 5) {
+        expect(includeSymbol(CountDownRemain10_5Symbol)).to.be.true
+      } else {
+        expect(includeSymbol(CountDownRemain10_5Symbol)).to.be.false
+      }
+
+      if (remainVo.remain <= 0) {
+        done()
+      }
+    })
+
+    cd.start()
+  })
+
+  it('#_getBreakPointSymbols custom symbol 3', function (done) {
+    let now = new Date()
+    let time = new Date(now.getTime() + 2000)
+
+    let CountDownTimeSymbol = cd.registerSymbol(`time:${ CountDown.formatStandardDate(time) }`)
+
+    cd.setTime(now, new Date(now.getTime() + 12000), now)
+    console.log(JSON.stringify(cd._breakpoint))
+
+    cd.setCallback((remainVo, includeSymbol) => {
+      if (parseInt(Date.now() / 1000) === parseInt(time.getTime() / 1000)) {
+        expect(includeSymbol(CountDownTimeSymbol)).to.be.true
+      } else {
+        expect(includeSymbol(CountDownTimeSymbol)).to.be.false
+      }
+
+      if (remainVo.remain <= 0) {
+        done()
+      }
+    })
+
+    cd.start()
+  })
+
+  it('#_getBreakPointSymbols custom symbol 4', function (done) {
+    let now = new Date()
+    let time = new Date(now.getTime() + 2000)
+
+    let point = `time:${ CountDown.formatStandardDate(time) }!`
+    let CountDownTimeSymbol = cd.registerSymbol(point)
+
+    cd.setTime(now, new Date(now.getTime() + 12000), now)
+    // console.log(JSON.stringify(cd._breakpoint))
+
+    cd.setCallback((remainVo, includeSymbol) => {
+      console.log(JSON.stringify(cd._breakpoint[point]))
+      console.log(JSON.stringify({ now: parseInt(Date.now() / 1000), time: parseInt(time.getTime() / 1000) }))
+      if (parseInt(Date.now() / 1000) >= parseInt(time.getTime() / 1000)) {
+        expect(includeSymbol(CountDownTimeSymbol)).to.be.true
+      } else {
+        expect(includeSymbol(CountDownTimeSymbol)).to.be.false
+      }
+
+      if (remainVo.remain <= 0) {
+        done()
+      }
+    })
+
+    cd.start()
+  })
+
+  it('#_getBreakPointSymbols custom symbol 5', function (done) {
+    let now = new Date()
+    let time = new Date(now.getTime() + 2000)
+    let expire = new Date(now.getTime() + 7000)
+
+    let point = `time:${ CountDown.formatStandardDate(time) }!T${ CountDown.formatStandardDate(expire) }`
+    let CountDownTimeSymbol = cd.registerSymbol(point)
+
+    cd.setTime(now, new Date(now.getTime() + 12000), now)
+    console.log(JSON.stringify(cd._breakpoint[point]))
+
+    cd.setCallback((remainVo, includeSymbol) => {
+      console.log(JSON.stringify({ now: parseInt(Date.now() / 1000), time: parseInt(time.getTime() / 1000), expire: parseInt(expire.getTime() / 1000), _now: cd._nowTime }))
+      if (parseInt(Date.now() / 1000) >= parseInt(time.getTime() / 1000) && parseInt(Date.now() / 1000) <= parseInt(expire.getTime() / 1000)) {
+        expect(includeSymbol(CountDownTimeSymbol)).to.be.true
+      } else {
+        expect(includeSymbol(CountDownTimeSymbol)).to.be.false
+      }
+
+      if (remainVo.remain <= 0) {
+        done()
+      }
+    })
+
+    cd.start()
+  })
 })

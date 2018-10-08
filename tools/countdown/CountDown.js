@@ -59,7 +59,7 @@ export default class CountDown {
     if (remain < 0) {
       remain = 0
     }
-    this._remain = typeof remain !== 'number' ? 0 : CountDown.setTimeFormat(remain)
+    this._remain = typeof remain !== 'number' ? 0 : CountDown.formatTimestamp(remain)
     this.exit()
 
     return this
@@ -74,9 +74,9 @@ export default class CountDown {
    * @param {date | number | string} nowTime
    */
   setTime (startTime, endTime, nowTime) {
-    this._startTime = CountDown.setTimeFormat(startTime)
-    this._endTime = CountDown.setTimeFormat(endTime)
-    this._nowTime = CountDown.setTimeFormat(nowTime)
+    this._startTime = CountDown.formatTimestamp(startTime)
+    this._endTime = CountDown.formatTimestamp(endTime)
+    this._nowTime = CountDown.formatTimestamp(nowTime)
     let remainTime = this._endTime - Math.max(this._startTime, this._nowTime)
     this.setRemainTime(remainTime > 0 ? remainTime : 0)
 
@@ -243,13 +243,14 @@ export default class CountDown {
 
     if (match) {
       let type = breakpoint['type'] = match[1]
+      let value = match[2]
       let s = match[3]
       let expires = match[4]
 
       if (type === 'remain') {
-        breakpoint['value'] = Number(match[2])
+        breakpoint['value'] = Number(value)
       } else if (type === 'time') {
-        breakpoint['value'] = CountDown.setTimeFormat(match[2])
+        breakpoint['value'] = CountDown.formatTimestamp(value)
       } else {
         breakpoint['value'] = null
       }
@@ -257,20 +258,24 @@ export default class CountDown {
       if (s === '!') {
         if (expires) {
           if (expires.substring(0, 1) === 'T') {
-            expires =  CountDown.setTimeFormat(expires.substring(1))
+            expires =  CountDown.formatTimestamp(expires.substring(1))
             breakpoint['ET'] = 'T'
           } else {
             if (expires.substring(0, 1) === 'R') {
               expires = expires.substring(1)
             }
 
-            expires = CountDown.setTimeFormat(expires)
+            expires = CountDown.formatTimestamp(expires)
             breakpoint['ET'] = 'R'
           }
           breakpoint['expires'] = expires
         } else {
+          breakpoint['ET'] = null
           breakpoint['expires'] = Infinity
         }
+      } else {
+        breakpoint['ET'] = null
+        breakpoint['expires'] = null
       }
     } else {
       console.error('【CountDown】错误的断点类型！')
@@ -307,7 +312,7 @@ export default class CountDown {
               continue
             }
 
-            let time = CountDown.setTimeFormat(value)
+            let time = CountDown.formatTimestamp(value)
             let nowTime = this._endTime - remain
             // 防止页面重新展示时，时间已过，无法触发过期断点问题
             trigger = nowTime >= time
@@ -332,20 +337,24 @@ export default class CountDown {
           let symbol = breakpoint['symbol']
           let expires = breakpoint['expires']
           let ET = breakpoint['ET']
-          if (isFinite(expires)) {
+
+          if (expires == null) {
+            delete this._breakpoint[k]
+          } else if (isFinite(expires)) {
             if ('T' === ET) {
               if (!this._nowTime) {
                 console.error('【CountDown】请设置开始时间和结束时间！')
                 continue
               }
 
-              if (expires >= this._nowTime) {
+              if (expires <= this._nowTime) {
                 delete this._breakpoint[k]
               }
             } else if ('R' === ET && remain <= expires) {
               delete this._breakpoint[k]
             }
           }
+
           symbols.push(symbol)
         }
       }
@@ -387,28 +396,84 @@ export default class CountDown {
 }
 
 /**
- * STATIC: 主要用于开始时间和结束时间的初始化
+ * STATIC: 针对Safari进行字符串时间格式优化
+ * @param {string} time
+ */
+CountDown.DateStringFixed = function (time) {
+  let result = null
+
+  if (typeof time !== 'string') {
+    return time
+  }
+
+  // 针对safari浏览器做时间调整
+  if (/safari/gi.test(navigator.userAgent)) {
+    result = time.trim().replace(/\s+/, 'T')
+  }
+
+  if (isNaN(Date.parse(result))) {
+    return time
+  } else {
+    result = time
+  }
+
+  return result
+}
+
+/**
+ * STATIC: 将时间转换为毫秒（会将毫秒级别的值重置为0）
  * @param {date | number | string} time
  */
-CountDown.setTimeFormat = function (time) {
+CountDown.formatTimestamp = function (time) {
   let result = null
   if (time instanceof Date) {
     result = time.getTime()
   } else if (!isNaN(time) && (typeof time === 'number' || typeof time === 'string')) {
     result = Number(time)
   } else if (isNaN(time) && typeof time === 'string') {
-    // 针对safari浏览器做时间调整
-    if (/safari/gi.test(navigator.userAgent)) {
-      time = time.trim()
-      time = time.replace(/\s+/, 'T')
-    }
-
+    time = CountDown.DateStringFixed(time)
     result = new Date(time).getTime()
   } else {
     result = Date.now()
   }
 
   return parseInt(result / 1000) * 1000
+}
+
+/**
+ * STATIC: 格式化标准时间
+ * @param {date | number | string} time
+ */
+CountDown.formatStandardDate = function (time) {
+  let date = null
+  if (time instanceof Date) {
+    date = time
+  } else if (!isNaN(time) && typeof time === 'number') {
+    if (time >= new Date('1970-07-01T08:00').getTime()) {
+      date = new Date(time)
+    } else {
+      console.error('有效日期不能小于1970年07月01日08点整！')
+    }
+  } else if (isNaN(time) && typeof time === 'string') {
+    time = CountDown.DateStringFixed(time)
+
+    if (isNaN(Date.parse(time))) {
+      console.error('无效的日期格式')
+    } else {
+      return time
+    }
+  } else {
+    console.error('无效的日期类型')
+  }
+
+  let year = date.getFullYear()
+  let month = CountDown.formatTime(date.getMonth() + 1)
+  let day = CountDown.formatTime(date.getDate())
+  let hour = CountDown.formatTime(date.getHours())
+  let minute = CountDown.formatTime(date.getMinutes())
+  let second = CountDown.formatTime(date.getSeconds())
+
+  return CountDown.DateStringFixed(`${ year }-${ month }-${ day } ${ hour }:${ minute }:${ second }`)
 }
 
 /**
