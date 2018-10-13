@@ -52,7 +52,11 @@ module.exports = {
     ]
   },
   plugins: [
-    new CleanWebpackPlugin(['./dist']),
+    new CleanWebpackPlugin(['dist'], {
+      root: path.resolve(__dirname, '..'),
+      verbose: true,
+      dry: false
+    }),
     new HtmlWebpackPlugin({
       filename: 'index.html',
       template: './src/index.html'

@@ -151,7 +151,7 @@ window.onload = function () {
         /***********   #IMPORTANT  ***********/
         e.stopPropagation();
         e.stopImmediatePropagation();
-        e.defaultPrevented = true;
+        e.preventDefault()
 
         // 处理到大部分滚轮事件，防止多次触发计时器解绑和绑定，导致动作延迟高
         if (!isAniFinished || (Date.now() - getLastAniFinishedTime() < 1000)) {
