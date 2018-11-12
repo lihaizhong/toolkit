@@ -121,7 +121,7 @@ describe('【CountDown】set datetime', function () {
     cd.init()
   })
 
-  it('#setRemainTime <0', function () {
+  it('#setRemainTime < 0', function () {
     const remain = -2000
     cd.setRemainTime(remain)
     expect(cd._remain).to.equal(0)
@@ -270,18 +270,18 @@ describe('【CountDown】get breakpoint symbol list', function () {
   })
 
   it('#_getBreakPointSymbols finished symbol', function (done) {
-    let CountDownFinishedSymnbol = cd.registerFinishedSymbol()
+    let CountDownFinishedSymbol = cd.registerFinishedSymbol()
 
     cd.setRemainTime(1000)
 
     cd.setCallback((remainVo, includeSymbol) => {
       if (remainVo.remain === 0) {
         console.log('倒计时完成')
-        expect(includeSymbol(CountDownFinishedSymnbol)).to.be.true
+        expect(includeSymbol(CountDownFinishedSymbol)).to.be.true
         done()
       } else {
         console.log('倒计时正在继续')
-        expect(includeSymbol(CountDownFinishedSymnbol)).to.be.false
+        expect(includeSymbol(CountDownFinishedSymbol)).to.be.false
       }
     })
 
