@@ -52,7 +52,7 @@ module.exports = function(config) {
       reports: ['html', 'text-summary'],
 
       // base output directory. If you include %browser% in the path it will be replaced with the karma browser name
-      dir: path.join(__dirname, '../coverage'),
+      dir: path.join(__dirname, './coverage'),
 
       // Combines coverage information from multiple browsers into one report rather than outputting a report
       // for each browser.
