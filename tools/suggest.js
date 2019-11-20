@@ -2,7 +2,7 @@
  * 编辑距离算法(LD algorithm)
  * @param {string} source 输入的内容
  * @param {string} target 匹配的目标
- * @return {number} distance
+ * @return {object}
  */
 function levennsheinDistance (source, target) {
   const sourceLength = source.length
@@ -104,175 +104,228 @@ function levennsheinDistance (source, target) {
     result.distance = space[targetLength - 1]
   }
 
-  console.log(source || '【空】', target || '【空】', space, result)
+  // console.log(source || '【空】', target || '【空】', space, result)
 
   return result
 }
 
-/**
- * 计算数据相似度（根据权值调整）
- * @param {object} data
- * @property {number} maxLength
- * @property {number} count
- * @property {number} position
- * @property {number} distance
- * @param {string} source
- * @param {string} target
- * @return {number} similarity 相似度
- */
-function calcSimilarity (data = {}, source, target) {
-  const sourceLength = source.length
-  const targetLength = target.length
-  const WEIGHT_CONFIG = {
-    // 匹配到的最大长度
-    continuous: 35,
-    // 匹配到的个数
-    count: 20,
-    // 匹配到的位置
-    position: 10,
-    // 编辑文本的距离
-    distance: 35
-  }
-
-  return (
-    (1 - data.distance / Math.max(sourceLength, targetLength)) * WEIGHT_CONFIG.distance +
-    (1 - data.position / targetLength) * WEIGHT_CONFIG.position +
-    (data.continuous / targetLength) * WEIGHT_CONFIG.continuous +
-    (data.count / targetLength) * WEIGHT_CONFIG.count
-  )
-}
-
-/**
- * 获取待比较的值
- * @param {string} source 待比较的原始值
- * @param {boolean} caseSensitive 是否区分大小写
- * @return {string} result 转换后的待比较值
- */
-function getCompareValue (source, caseSensitive) {
-  return caseSensitive ? source : source.toLowerCase()
-}
-
-/**
- * 获取最大的相似度
- * @param {object} target
- * @param {string} match
- * @param {object} options
- * @return {number} similarity 最大相似度
- */
-function getMaxSimilarity (target, match, options) {
-  const { keyNameList, caseSensitive } = options
-  return keyNameList.reduce((accumulator, currentValue) => {
-    const value = getValue(target, currentValue)
-
-    const result = levennsheinDistance(
-      getCompareValue(match, caseSensitive),
-      getCompareValue(value, caseSensitive)
+class YouNeedSuggest {
+  /**
+   * 编辑距离算法排序
+   * @param {array} rowList 待排序的数组
+   * @param {string} match 排序的目标
+   * @param {object} options
+   * @property {string|array} keyNameList 如果数组的每一个value为对象，keyNameList为读取对象的属性
+   * @property {boolean} filterNoMatch 返回结果是否过滤未匹配到的数据
+   * @property {boolean} caseSensitive 区分大小写
+   * @property {object} weight 权重配置
+   * @returns {array} sortList 排完序的数组
+   */
+  constructor (rowList, match, options) {
+    this.rowList = rowList
+    this.match = match
+    this.options = Object.assign(
+      {
+        keyNameList: ['value'],
+        filterNoMatch: true,
+        caseSensitive: false,
+        weight: undefined
+      },
+      options
     )
 
-    const similarity = calcSimilarity(result, match, value)
-    // console.log(match, value, similarity, JSON.stringify(result))
+    const { keyNameList, weight } = this.options
 
-    if (!isFinite(similarity)) {
-      return accumulator
-    } else if (!isFinite(accumulator)) {
+    this.options.keyNameList = this.parseKeyNameList(keyNameList)
+    this.options.weight = this.parseWeight(weight)
+
+    Object.freeze(this.options)
+  }
+
+  /**
+   * 获取建议的结果
+   */
+  get () {
+    const { filterNoMatch } = this.options
+    const len = this.rowList.length
+    const result = []
+
+    // 遍历每一个数据，获得数据的编辑距离以及其它关键属性
+    for (let i = 0; i < len; i++) {
+      const data = this.rowList[i]
+
+      // 获取相似度
+      const similarity = this.getMaxSimilarity(data, this.match)
+
+      // 过滤完全没有匹配到的数据
+      if (filterNoMatch && (!isFinite(similarity) || similarity === 0)) {
+        continue
+      }
+
+      result.push({ ...data, __similarity__: similarity })
+    }
+
+    return (
+      result
+        // 根据数据的相似度进行排序
+        .sort((a, b) => {
+          if (!isFinite(b.__similarity__)) {
+            return -1
+          } else if (!isFinite(a.__similarity__)) {
+            return 1
+          } else {
+            return b.__similarity__ - a.__similarity__
+          }
+        })
+    )
+  }
+
+  /**
+   * 解析权重配置
+   * @param {object} weight 权重配置
+   */
+  parseWeight (weight) {
+    const defaultWeight = {
+      // 匹配到的最大长度
+      continuous: 35,
+      // 匹配到的个数
+      count: 20,
+      // 匹配到的位置
+      position: 10,
+      // 编辑文本的距离
+      distance: 35
+    }
+
+    if (weight === undefined) {
+      return defaultWeight
+    }
+
+    const keywords = ['continuous', 'count', 'position', 'distance']
+
+    for (let i = 0; i < keywords.length; i++) {
+      const keyword = keywords[i]
+
+      if (typeof weight[keyword] !== 'number') {
+        console.warn(`【options.weight】${keyword}必须是一个数字`)
+        return defaultWeight
+      }
+    }
+
+    if (keywords.reduce((acc, keyword) => acc + weight[keyword], 0) !== 100) {
+      console.warn('关键字continuous, count, position, distance的值相加必须等于100')
+      const { continuous, count, position, distance } = weight
+      const rate = 100 / (continuous + count + position + distance)
+      return {
+        continuous: continuous * rate,
+        count: count * rate,
+        position: position * rate,
+        distance: distance * rate
+      }
+    }
+
+    return weight
+  }
+
+  /**
+   * 解析keyNameList
+   * @param {string|array} keyNameList
+   * @return {array} keyNameList
+   */
+  parseKeyNameList (keyNameList) {
+    if (typeof keyNameList === 'string') {
+      return keyNameList.split(',')
+    } else if (keyNameList instanceof Array) {
+      return keyNameList
+    }
+
+    throw new Error('keyNameList 必须是字符串类型或者数组类型')
+  }
+
+  /**
+   * 计算数据相似度（根据权值调整）
+   * @param {object} data
+   * @property {number} maxLength
+   * @property {number} count
+   * @property {number} position
+   * @property {number} distance
+   * @param {string} source
+   * @param {string} target
+   * @return {number} similarity 相似度
+   */
+  calcSimilarity (data = {}, source, target) {
+    const sourceLength = source.length
+    const targetLength = target.length
+    const { weight: WEIGHT_CONFIG } = this.options
+
+    return (
+      (1 - data.distance / Math.max(sourceLength, targetLength)) * WEIGHT_CONFIG.distance +
+      (1 - data.position / targetLength) * WEIGHT_CONFIG.position +
+      (data.continuous / targetLength) * WEIGHT_CONFIG.continuous +
+      (data.count / targetLength) * WEIGHT_CONFIG.count
+    )
+  }
+
+  /**
+   * 获取值
+   * @param {object} target
+   * @param {string} key
+   * @return {string} value
+   */
+  getValue (target, key) {
+    const keyType = typeof key
+    if (
+      target !== null &&
+      typeof target === 'object' &&
+      (keyType === 'string' || keyType === 'number') &&
+      key !== ''
+    ) {
+      return target[key]
+    } else if (typeof target === 'string') {
+      return target
+    }
+
+    return JSON.stringify(target)
+  }
+
+  /**
+   * 获取待比较的值
+   * @param {string} source 待比较的原始值
+   * @return {string} result 转换后的待比较值
+   */
+  getCompareValue (source) {
+    const { caseSensitive } = this.options
+    return caseSensitive ? source : source.toLowerCase()
+  }
+
+  /**
+   * 获取最大的相似度
+   * @param {object} target
+   * @param {string} match
+   * @return {number} 最大相似度
+   */
+  getMaxSimilarity (target, match) {
+    const { keyNameList } = this.options
+    return keyNameList.reduce((accumulator, currentValue) => {
+      const value = this.getValue(target, currentValue)
+
+      const result = levennsheinDistance(this.getCompareValue(match), this.getCompareValue(value))
+
+      const similarity = this.calcSimilarity(result, match, value)
+      // console.log(match, value, similarity, JSON.stringify(result))
+
+      if (!isFinite(similarity)) {
+        return accumulator
+      } else if (!isFinite(accumulator)) {
+        return similarity
+      } else if (accumulator > similarity) {
+        return accumulator
+      }
+
       return similarity
-    } else if (accumulator > similarity) {
-      return accumulator
-    }
-
-    return similarity
-  }, -Infinity)
+    }, -Infinity)
+  }
 }
 
-/**
- * 获取值
- * @param {object} target
- * @param {string} key
- * @return {string} value
- */
-function getValue (target, key) {
-  const keyType = typeof key
-  if (
-    target !== null &&
-    typeof target === 'object' &&
-    (keyType === 'string' || keyType === 'number') &&
-    key !== ''
-  ) {
-    return target[key]
-  } else if (typeof target === 'string') {
-    return target
-  }
-
-  return JSON.stringify(target)
-}
-
-/**
- * 解析keyNameList
- * @param {string|array} keyNameList
- * @return {array} keyNameList
- */
-function parseKeyNameList (keyNameList) {
-  if (typeof keyNameList === 'string') {
-    return keyNameList.split(',')
-  } else if (keyNameList instanceof Array) {
-    return keyNameList
-  }
-
-  throw new Error('keyNameList 必须是字符串类型或者数组类型')
-}
-
-/**
- * 编辑距离算法排序
- * @param {array} rowList 待排序的数组
- * @param {string} match 排序的目标
- * @param {object} options
- * @property {string|array} keyNameList 如果数组的每一个value为对象，keyNameList为读取对象的属性
- * @property {boolean} filterNoMatch 返回结果是否过滤未匹配到的数据
- * @property {boolean} caseSensitive 区分大小写
- * @returns {array} sortList 排完序的数组
- */
-export default function suggest (rowList, match, options) {
-  options = Object.assign(
-    {
-      keyNameList: ['value'],
-      filterNoMatch: true,
-      caseSensitive: false
-    },
-    options
-  )
-  const { filterNoMatch } = options
-  const len = rowList.length
-  const result = []
-
-  const keyNameList = parseKeyNameList(options.keyNameList)
-  const opts = Object.assign({}, options, { keyNameList })
-
-  // 遍历每一个数据，获得数据的编辑距离以及其它关键属性
-  for (let i = 0; i < len; i++) {
-    const data = rowList[i]
-
-    // 获取相似度
-    const similarity = getMaxSimilarity(data, match, opts)
-
-    // 过滤完全没有匹配到的数据
-    if (filterNoMatch && (!isFinite(similarity) || similarity === 0)) {
-      continue
-    }
-
-    result.push({ ...data, __similarity__: similarity })
-  }
-
-  return (
-    result
-      // 根据数据的相似度进行排序
-      .sort((a, b) => {
-        if (!isFinite(b.__similarity__)) {
-          return -1
-        } else if (!isFinite(a.__similarity__)) {
-          return 1
-        } else {
-          return b.__similarity__ - a.__similarity__
-        }
-      })
-  )
+export default function (rowList, match, options) {
+  return new YouNeedSuggest(rowList, match, options).get()
 }
