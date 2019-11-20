@@ -1,7 +1,0 @@
-{
-  "eslint.options": {
-    "configFile": ".eslintrc",
-    "ignorePath": ".eslintignore"
-  },
-  "eslint.enable": true
-}
