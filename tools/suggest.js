@@ -279,12 +279,20 @@ class YouNeedSuggest {
       (keyType === 'string' || keyType === 'number') &&
       key !== ''
     ) {
-      return target[key]
+      const value = target[key]
+      if (typeof value !== 'string') {
+        console.warn(`${key}的值必须是一个字符串`)
+        return ''
+      }
+
+      return value
     } else if (typeof target === 'string') {
       return target
     }
 
-    return JSON.stringify(target)
+    const value = JSON.stringify(target)
+    console.warn(`${value}不符合数据结构要求`)
+    return value
   }
 
   /**
@@ -307,9 +315,9 @@ class YouNeedSuggest {
     const { keyNameList } = this.options
     return keyNameList.reduce((accumulator, currentValue) => {
       const value = this.getValue(target, currentValue)
-
+      // 获得变量因子
       const result = levennsheinDistance(this.getCompareValue(match), this.getCompareValue(value))
-
+      // 计算相似度
       const similarity = this.calcSimilarity(result, match, value)
       // console.log(match, value, similarity, JSON.stringify(result))
 
