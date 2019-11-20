@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>suggest test</title>
+  <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      font-size: 16px;
+    }
+
+    .control-wrap {
+      box-sizing: border-box;
+      width: 600px;
+      height: 10vh;
+      max-height: 70px;
+      min-height: 60px;
+      margin: 0 auto;
+      padding: 20px 10px;
+      text-align: center;
+    }
+
+    .suggest-control {
+      width: 100%;
+      height: 100%;
+      text-indent: 8px;
+      font-size: 18px;
+    }
+
+    .suggest-result-wrap {
+      width: 600px;
+      height: 90vh;
+      margin: 0 auto;
+      overflow: scroll;
+    }
+  </style>
+
+  <script type="module" crossorigin>
+    import suggest from '../suggest.js'
+
+    const suggestList = [
+      { code: 'ZXBZJXX', name: '装修保证金（小写）' },
+      { code: 'ZXBZJXXUP', name: '装修保证金（大写）' },
+      { code: 'ZXQGDZJXX', name: '装修期固定租金（小写）' },
+      { code: 'ZXQGDZJXXUP', name: '装修期固定租金（大写）' },
+      { code: 'ZXQWYGLFXX', name: '装修期物业管理费（小写）' },
+      { code: 'ZXQWYGLFXXUP', name: '装修期物业管理费（大写）' },
+      { code: 'SDFBZJXX', name: '水电费保证金（小写）' },
+      { code: 'SDFBZJXXUP', name: '水电费保证金（大写）' },
+      { code: 'GDZJ.RZJBZXX', name: '固定租金日租金标准（小写）' },
+      { code: 'GDZJ.RZJBZXXUP', name: '固定租金日租金标准（大写）' },
+      { code: 'GDZJ.YZJBZXX', name: '固定租金月租金标准（小写）' },
+      { code: 'GDZJ.YZJBZXXUP', name: '固定租金月租金标准（大写）' },
+      { code: 'GDZJ.YZJZEXX', name: '固定租金月租金总额（小写）' },
+      { code: 'GDZJ.YZJZEXXUP', name: '固定租金月租金总额（大写）' },
+      { code: 'GDZJ.NGDZJXX', name: '固定租金年固定租金（小写）' },
+      { code: 'GDZJ.NGDZJXXUP', name: '固定租金年固定租金（大写）' },
+      { code: 'GDZJ.YXSEQD', name: '固定租金月销售额起点' },
+      { code: 'GDZJ.YXSEZD', name: '固定租金月销售额终点' },
+      { code: 'XSCCZJFW.SXSSRKS', name: '销售抽成租金范围销售收入开始' },
+      { code: 'XSCCZJFW.SXSSRJS', name: '销售抽成租金范围销售收入结束' },
+      { code: 'WYGLF.RMPFMWYGLFBZXX', name: '日每平方米物业管理费标准（小写）' },
+      { code: 'WYGLF.RMPFMWYGLFBZXXUP', name: '日每平方米物业管理费标准（大写）' },
+      { code: 'WYGLF.YWYGLFBZXX', name: '月物业管理费标准（小写）' },
+      { code: 'WYGLF.YWYGLFBZXXUP', name: '月物业管理费标准（大写）' },
+      { code: 'WYGLF.YWYGLFZEXX', name: '月物业管理费总额（小写）' },
+      { code: 'WYGLF.YWYGLFZEXXUP', name: '月物业管理费总额（大写）' },
+      { code: 'WYGLFBZJ', name: '物业管理费保证金' },
+      { code: 'LYBZJZE.LYBZJZEXX', name: '履约保证金总额（小写）' },
+      { code: 'LYBZJZE.LYBZJZEXXUP', name: '履约保证金总额（大写）' },
+      { code: 'ZLBZJZE', name: '质量保证金总额' },
+      { code: 'SYJMYWHFWF', name: '收银机每月维护服务费' },
+      { code: 'SYJMTYJ', name: '收银机每台押金' },
+      { code: 'CZKMFLJESX', name: '储值卡免费率金额上限' },
+      { code: 'RXTHCYJESX', name: '任性退换参与金额上限' },
+      { code: 'RXTHCYJEXX', name: '任性退换参与金额下限' },
+      { code: 'JCDJ.JCDJXX', name: '进场定金（小写）' },
+      { code: 'JCDJ.JCDJXXUP', name: '进场定金（大写）' },
+      { code: 'CKZLF.YZJBZXX', name: '仓库租赁费月租金标准（小写）' },
+      { code: 'CKZLF.YZZJEXX', name: '仓库租赁费月租总金额（小写）' },
+      { code: 'CKZLF.YZZJEXXUP', name: '仓库租赁费月租总金额（大写）' },
+      { code: 'GGWZLF.YZZJEXX', name: '广告位租赁费月租总金额（小写）' },
+      { code: 'GGWZLF.YZZJEXXUP', name: '广告位租赁费月租总金额（大写）' },
+      { code: 'YKDFBZ', name: '月空调费标准' },
+      { code: 'JYSJCSFWFSFBZ', name: '经营时间超时服务费收费标准' },
+      { code: 'HZYXJZE', name: '合作意向金总额' },
+      { code: 'CKZLBZJ', name: '仓库租赁保证金' },
+      { code: 'DFDJ', name: '电费单价' },
+      { code: 'FWFDJ', name: '服务费单价' },
+      { code: 'DFHFWFZDJ', name: '电费和服务费总单价' },
+      { code: 'CKZLF.RZJBZXX', name: '仓库租赁费日租金标准（小写）' },
+      { code: 'XSCCZJGD.SXSSRKS', name: '销售抽成租金固定销售收入开始' },
+      { code: 'XSCCZJGD.SXSSRJS', name: '销售抽成租金固定销售收入结束' },
+      { code: 'ZXGLFBZ', name: '装修管理费标准' },
+      { code: 'XSCCZJGD.BDSQYYYE', name: '保底税前月营业额' },
+      { code: 'KYBZJ', name: '开业保证金' }
+    ]
+
+    function generatorResultDisplay(list) {
+      const $$result = document.getElementById('suggestResult')
+
+      let html = `<table border="1"><tr><th align="left">名称</th><th align="left">代码</th><th align="left">相似度</th></tr>`
+
+      html += list.map(({ code, name, __similarity__ }) => `<tr><td>${name}</td><td>${code}</td><td>${__similarity__}</td></tr>`).join('')
+
+      html += '</table>'
+
+      $$result.innerHTML = html
+    }
+
+    window.onload = function () {
+      const $$suggest = document.getElementById('suggestControl')
+
+      function generate(suggestList, value = '') {
+
+        const list = suggest(suggestList, value, { keyNameList: ['code', 'name'], filterNoMatch: false })
+        generatorResultDisplay(list)
+      }
+
+      $$suggest.addEventListener('input', function () {
+        generate(suggestList, $$suggest.value)
+      })
+
+      generate(suggestList)
+    }
+  </script>
+</head>
+
+<body>
+  <div class="control-wrap">
+    <input type="text" id="suggestControl" class="suggest-control">
+  </div>
+
+  <div id="suggestResult" class="suggest-result-wrap"></div>
+
+</body>
+
+</html>

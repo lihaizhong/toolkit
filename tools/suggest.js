@@ -10,7 +10,7 @@ function editDistance (target, compare) {
   const space = new Array(lenB)
   const result = {
     // 最大的匹配词长度
-    maxLength: -1,
+    maxLength: 0,
     // 匹配词总个数
     count: 0,
     // 首个匹配字符的位置
@@ -116,10 +116,6 @@ function editDistance (target, compare) {
  * @return {number} similarity 相似度
  */
 function calcSimilarity (data = {}, length) {
-  if (!data.count) {
-    return -Infinity
-  }
-
   const WEIGHT_CONFIG = {
     // 匹配到的最大长度
     maxLength: 40,
@@ -132,11 +128,9 @@ function calcSimilarity (data = {}, length) {
   }
 
   return (
-    (data.maxLength * WEIGHT_CONFIG.maxLength +
-      data.count * WEIGHT_CONFIG.count -
-      data.position * WEIGHT_CONFIG.position -
-      data.distance * WEIGHT_CONFIG.distance) /
-    length
+    (data.maxLength * WEIGHT_CONFIG.maxLength - data.distance * WEIGHT_CONFIG.distance) / length +
+    data.count * WEIGHT_CONFIG.count -
+    data.position * WEIGHT_CONFIG.position
   )
 }
 
@@ -170,9 +164,9 @@ function getMaxSimilarity (target, match, options) {
     const similarity = calcSimilarity(result, value.length)
     // console.log(match, value, similarity, JSON.stringify(result))
 
-    if (isFinite(similarity)) {
+    if (!isFinite(similarity)) {
       return accumulator
-    } else if (isFinite(accumulator)) {
+    } else if (!isFinite(accumulator)) {
       return similarity
     } else if (accumulator > similarity) {
       return accumulator
@@ -212,9 +206,11 @@ function getValue (target, key) {
 function parseKeyNameList (keyNameList) {
   if (typeof keyNameList === 'string') {
     return keyNameList.split(',')
-  } else if (!(keyNameList instanceof Array)) {
-    throw new Error('keyNameList 必须是字符串类型或者数组类型')
+  } else if (keyNameList instanceof Array) {
+    return keyNameList
   }
+
+  throw new Error('keyNameList 必须是字符串类型或者数组类型')
 }
 
 /**
@@ -227,15 +223,15 @@ function parseKeyNameList (keyNameList) {
  * @property {boolean} caseSensitive 区分大小写
  * @returns {array} sortList 排完序的数组
  */
-export default function suggest (
-  rowList,
-  match,
-  options = {
-    keyNameList: ['value'],
-    filterNoMatch: true,
-    caseSensitive: false
-  }
-) {
+export default function suggest (rowList, match, options) {
+  options = Object.assign(
+    {
+      keyNameList: ['value'],
+      filterNoMatch: true,
+      caseSensitive: false
+    },
+    options
+  )
   const { filterNoMatch } = options
   const len = rowList.length
   const result = []
@@ -262,15 +258,15 @@ export default function suggest (
     result
       // 根据数据的相似度进行排序
       .sort((a, b) => {
-        if (isFinite(b.similarity)) {
+        if (!isFinite(b.similarity)) {
           return -1
-        } else if (isFinite(a.similarity)) {
+        } else if (!isFinite(a.similarity)) {
           return 1
         } else {
           return b.similarity - a.similarity
         }
       })
       // 还原数据结构
-      .map(({ data }) => data)
+      .map(({ data, similarity }) => ({ ...data, __similarity__: similarity }))
   )
 }
