@@ -118,20 +118,20 @@
       $$result.innerHTML = html
     }
 
+    function generate(suggestList, filterNoMatch, value = '') {
+      const list = suggest(suggestList, value, { keyNameList: ['code', 'name'], filterNoMatch })
+      generatorResultDisplay(list)
+    }
+
     window.onload = function () {
       const $$suggest = document.getElementById('suggestControl')
 
-      function generate(suggestList, value = '') {
-
-        const list = suggest(suggestList, value, { keyNameList: ['code', 'name'], filterNoMatch: false })
-        generatorResultDisplay(list)
-      }
-
       $$suggest.addEventListener('input', function () {
-        generate(suggestList, $$suggest.value)
+        const value = $$suggest.value
+        generate(suggestList, !!value, value)
       })
 
-      generate(suggestList)
+      generate(suggestList, false)
     }
   </script>
 </head>
