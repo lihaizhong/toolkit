@@ -1,0 +1,31 @@
+{
+  "name": "vuepress-theme-ppt",
+  "version": "0.0.1",
+  "private": true,
+  "description": "VuePress ppt 主题包",
+  "keywords": [
+    "vuepress",
+    "ppt"
+  ],
+  "author": "sky <854323752@qq.com>",
+  "homepage": "https://github.com/lihaizhong/toolkit/tree/master/packages/themes/vuepress-theme-ppt#readme",
+  "license": "MIT",
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "styles",
+    "layouts",
+    "global-components",
+    "utils",
+    "components"
+  ],
+  "publishConfig": {
+    "registry": "http://npm.2dfire.net/"
+  },
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "dependencies": {
+    "swiper": "^5.0.4"
+  }
+}

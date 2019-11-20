@@ -1,0 +1,20 @@
+{
+  "name": "vuepress-theme-chinoiserie",
+  "version": "1.0.0",
+  "private": true,
+  "description": "中国风主题",
+  "keywords": [
+    "vuepress",
+    "theme",
+    "chinoiserie"
+  ],
+  "author": "sky <854323752@qq.com>",
+  "homepage": "https://github.com/lihaizhong/toolkit/tree/master/packages/themes/vuepress-theme-chinoiserie#readme",
+  "license": "ISC",
+  "publishConfig": {
+    "registry": "http://npm.2dfire.net/"
+  },
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  }
+}

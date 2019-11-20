@@ -6,5 +6,10 @@
   "scripts": {},
   "author": "sky",
   "license": "ISC",
-  "devDependencies": {}
+  "devDependencies": {
+    "eslint": "^6.6.0",
+    "eslint-plugin-html": "^6.0.0",
+    "eslint-plugin-import": "^2.18.2",
+    "lerna": "^3.18.5"
+  }
 }
