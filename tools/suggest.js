@@ -74,7 +74,13 @@ function levennsheinDistance (source, target) {
 
       // 如果匹配到了结果
       if (matchIndex !== -1) {
-        if (continuous === 0 || (matchIndex > 0 && source[i - 1] === target[matchIndex - 1])) {
+        if (i > 0 && matchIndex > 0 && source[i - 1] === target[matchIndex - 1]) {
+          if (continuous === 0) {
+            continuous = 2
+          } else {
+            continuous++
+          }
+        } else if (continuous === 0) {
           continuous++
         } else {
           // 设置最长的连续字符
