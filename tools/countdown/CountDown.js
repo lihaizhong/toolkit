@@ -20,7 +20,7 @@
 import './requestAnimationFrame'
 
 export default class CountDown {
-  constructor(needRemainFormat) {
+  constructor (needRemainFormat) {
     this.init(needRemainFormat)
   }
 
@@ -32,13 +32,13 @@ export default class CountDown {
    * 初始化
    * @param {boolean} needRemainFormat
    */
-  init(needRemainFormat) {
+  init (needRemainFormat) {
     this._needRemainFormat = needRemainFormat !== false
     this._nowTime = this._startTime = this._endTime = null
     this._timer = null
     this._remain = 0
     this._breakpoint = {}
-    this._callback = function() {}
+    this._callback = function () {}
   }
 
   /**
@@ -47,12 +47,11 @@ export default class CountDown {
    * 设置剩余时间
    * @param {number} remain
    */
-  setRemainTime(remain) {
+  setRemainTime (remain) {
     if (remain < 0) {
       remain = 0
     }
-    this._remain =
-      typeof remain !== 'number' ? 0 : CountDown.formatTimestamp(remain)
+    this._remain = typeof remain !== 'number' ? 0 : CountDown.formatTimestamp(remain)
     this.exit()
 
     return this
@@ -66,11 +65,11 @@ export default class CountDown {
    * @param {date | number | string} endTime
    * @param {date | number | string} nowTime
    */
-  setTime(startTime, endTime, nowTime) {
+  setTime (startTime, endTime, nowTime) {
     this._startTime = CountDown.formatTimestamp(startTime)
     this._endTime = CountDown.formatTimestamp(endTime)
     this._nowTime = CountDown.formatTimestamp(nowTime)
-    let remainTime = this._endTime - Math.max(this._startTime, this._nowTime)
+    const remainTime = this._endTime - Math.max(this._startTime, this._nowTime)
     this.setRemainTime(remainTime > 0 ? remainTime : 0)
 
     return this
@@ -82,7 +81,7 @@ export default class CountDown {
    * 设置毁掉函数
    * @param {function} callback
    */
-  setCallback(callback) {
+  setCallback (callback) {
     this._callback = callback
     this.exit()
 
@@ -94,8 +93,8 @@ export default class CountDown {
    *
    * 启动计时器
    */
-  start() {
-    let isFinished = this._remain <= 0
+  start () {
+    const isFinished = this._remain <= 0
     // 执行回调函数
     this._callback(this._getRemainTimeFormat(this._remain), isFinished)
     if (!isFinished) {
@@ -108,17 +107,17 @@ export default class CountDown {
    *
    * 重启计时器
    */
-  play() {
+  play () {
     let timerStart = Date.now()
 
     if (this._startTime && this._startTime > this._nowTime) {
       return
     }
 
-    function __callback__() {
-      let timerEnd = Date.now()
-      let interval = parseInt((timerEnd - timerStart) / 1000) * 1000
-      let base = 1000
+    function __callback__ () {
+      const timerEnd = Date.now()
+      const interval = parseInt((timerEnd - timerStart) / 1000) * 1000
+      const base = 1000
       let remain = this._remain
       let isFinished = false
 
@@ -141,7 +140,7 @@ export default class CountDown {
 
         this._remain = remain
         // 格式化剩余时间
-        let remainFormat = this._getRemainTimeFormat(remain)
+        const remainFormat = this._getRemainTimeFormat(remain)
         // 执行回调函数
         this._callback(remainFormat, isFinished)
       }
@@ -159,7 +158,7 @@ export default class CountDown {
    *
    * 暂停计时器
    */
-  pause() {
+  pause () {
     cancelAnimationFrame(this._timer)
     this._timer = null
   }
@@ -169,7 +168,7 @@ export default class CountDown {
    *
    * 关闭计时器
    */
-  exit() {
+  exit () {
     this.pause()
   }
 
@@ -179,33 +178,29 @@ export default class CountDown {
    * 获取格式化后的剩余时间对象
    * @param {number} remain
    */
-  _getRemainTimeFormat(remain) {
+  _getRemainTimeFormat (remain) {
     if (!this._needRemainFormat) {
       return remain / 1000
     }
 
-    let remainFormat = {}
+    const remainFormat = {}
 
     remainFormat.remain = remain / 1000
 
-    let dayFormat = 86400000
+    const dayFormat = 86400000
     remainFormat.day = CountDown.formatTime(parseInt(remain / dayFormat))
     remain = remain % dayFormat
 
-    let hoursFormat = 3600000
+    const hoursFormat = 3600000
     remainFormat.hours = CountDown.formatTime(parseInt(remain / hoursFormat))
     remain = remain % hoursFormat
 
-    let minutesFormat = 60000
-    remainFormat.minutes = CountDown.formatTime(
-      parseInt(remain / minutesFormat)
-    )
+    const minutesFormat = 60000
+    remainFormat.minutes = CountDown.formatTime(parseInt(remain / minutesFormat))
     remain = remain % minutesFormat
 
-    let secondsFormat = 1000
-    remainFormat.seconds = CountDown.formatTime(
-      parseInt(remain / secondsFormat)
-    )
+    const secondsFormat = 1000
+    remainFormat.seconds = CountDown.formatTime(parseInt(remain / secondsFormat))
 
     return remainFormat
   }
@@ -215,7 +210,7 @@ export default class CountDown {
  * STATIC: 针对Safari进行字符串时间格式优化
  * @param {string} time
  */
-CountDown.DateStringFixed = function(time) {
+CountDown.DateStringFixed = function (time) {
   let result = null
 
   if (typeof time !== 'string') {
@@ -240,14 +235,11 @@ CountDown.DateStringFixed = function(time) {
  * STATIC: 将时间转换为毫秒（会将毫秒级别的值重置为0）
  * @param {date | number | string} time
  */
-CountDown.formatTimestamp = function(time) {
+CountDown.formatTimestamp = function (time) {
   let result = null
   if (time instanceof Date) {
     result = time.getTime()
-  } else if (
-    !isNaN(time) &&
-    (typeof time === 'number' || typeof time === 'string')
-  ) {
+  } else if (!isNaN(time) && (typeof time === 'number' || typeof time === 'string')) {
     result = Number(time)
   } else if (isNaN(time) && typeof time === 'string') {
     time = CountDown.DateStringFixed(time)
@@ -263,7 +255,7 @@ CountDown.formatTimestamp = function(time) {
  * STATIC: 格式化时间
  * @param {number} time
  */
-CountDown.formatTime = function(time) {
+CountDown.formatTime = function (time) {
   if (isNaN(time) || time === '' || typeof time === 'boolean') {
     time = 0
   }
