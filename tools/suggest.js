@@ -56,6 +56,7 @@ function levennsheinDistance (source, target) {
           if (result.continuous < continuous) {
             result.continuous = continuous
           }
+
           modifyNum = 1
           continuous = 0
         }
@@ -63,6 +64,7 @@ function levennsheinDistance (source, target) {
         // 获取增，删，改和不变得到的最小值
         const min = Math.min(prevDistance + 1, topDistance + 1, temp + modifyNum)
 
+        // 保存左上角的数据，计算最小值时需要用到
         temp = topDistance
         space[j] = min
       }
@@ -97,18 +99,18 @@ function calcSimilarity (data = {}, sourceLength, targetLength) {
     // 匹配到的最大长度
     continuous: 35,
     // 匹配到的个数
-    count: 25,
+    count: 20,
     // 匹配到的位置
-    position: 5,
+    position: 10,
     // 编辑文本的距离
     distance: 35
   }
 
   return (
     (1 - data.distance / Math.max(sourceLength, targetLength)) * WEIGHT_CONFIG.distance +
+    (1 - data.position / targetLength) * WEIGHT_CONFIG.position +
     (data.continuous / targetLength) * WEIGHT_CONFIG.continuous +
-    (data.count / targetLength) * WEIGHT_CONFIG.count +
-    (1 - data.position / targetLength) * WEIGHT_CONFIG.position
+    (data.count / targetLength) * WEIGHT_CONFIG.count
   )
 }
 
@@ -229,22 +231,20 @@ export default function suggest (rowList, match, options) {
       continue
     }
 
-    result.push({ similarity, data })
+    result.push({ ...data, __similarity__: similarity })
   }
 
   return (
     result
       // 根据数据的相似度进行排序
       .sort((a, b) => {
-        if (!isFinite(b.similarity)) {
+        if (!isFinite(b.__similarity__)) {
           return -1
-        } else if (!isFinite(a.similarity)) {
+        } else if (!isFinite(a.__similarity__)) {
           return 1
         } else {
-          return b.similarity - a.similarity
+          return b.__similarity__ - a.__similarity__
         }
       })
-      // 还原数据结构
-      .map(({ data, similarity }) => ({ ...data, __similarity__: similarity }))
   )
 }
