@@ -25,8 +25,11 @@ function levennsheinDistance (source, target) {
   } else if (targetLength === 0) {
     result.distance = sourceLength
   } else {
+    // 保存所有匹配到的字符的index
     const matchPositionList = []
+    // 连续字符长度
     let continuous = 0
+    // 0 为不需要做增删改的操作，1 为需要做增删改操作
     let modifyNum = 0
 
     for (let i = 0; i < sourceLength; i++) {
@@ -42,6 +45,7 @@ function levennsheinDistance (source, target) {
         if (sourceChar === targetChar) {
           modifyNum = 0
 
+          // 解决重复匹配的问题
           if (matchIndex === -1 && !matchPositionList.includes(j)) {
             matchIndex = j
           }
@@ -62,13 +66,25 @@ function levennsheinDistance (source, target) {
         space[j] = min
       }
 
+      // 如果匹配到了结果
       if (matchIndex !== -1) {
+        if (continuous === 0) {
+          continuous++
+        } else if (matchIndex !== 0 && source[i - 1] === target[matchIndex - 1]) {
+          continuous++
+        } else {
+          // 设置最长的连续字符
+          if (result.continuous < continuous) {
+            result.continuous = continuous
+          }
+
+          continuous = 1
+        }
+
         // 判断结果是否已经被匹配过
         if (!matchPositionList.includes(matchIndex)) {
           matchPositionList.push(matchIndex)
         }
-
-        continuous++
       } else {
         // 设置最长的连续字符
         if (result.continuous < continuous) {
@@ -118,8 +134,6 @@ function calcSimilarity (data = {}, source, target) {
     // 编辑文本的距离
     distance: 35
   }
-
-  // console.log(source, target, data.continuous, targetLength)
 
   return (
     (1 - data.distance / Math.max(sourceLength, targetLength)) * WEIGHT_CONFIG.distance +
