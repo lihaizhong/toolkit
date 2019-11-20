@@ -32,6 +32,7 @@ function levennsheinDistance (source, target) {
     for (let i = 0; i < sourceLength; i++) {
       const sourceChar = source[i]
       let temp = i
+      let matchIndex = -1
 
       for (let j = 0; j < targetLength; j++) {
         const targetChar = target[j]
@@ -40,11 +41,9 @@ function levennsheinDistance (source, target) {
 
         if (sourceChar === targetChar) {
           modifyNum = 0
-          continuous++
 
-          // 判断结果是否已经被匹配过
-          if (!matchPositionList.includes(j)) {
-            matchPositionList.push(j)
+          if (matchIndex === -1 && !matchPositionList.includes(j)) {
+            matchIndex = j
           }
 
           // 设置首位匹配到的字符
@@ -52,13 +51,7 @@ function levennsheinDistance (source, target) {
             result.position = j
           }
         } else {
-          // 设置最长的连续字符
-          if (result.continuous < continuous) {
-            result.continuous = continuous
-          }
-
           modifyNum = 1
-          continuous = 0
         }
 
         // 获取增，删，改和不变得到的最小值
@@ -67,6 +60,22 @@ function levennsheinDistance (source, target) {
         // 保存左上角的数据，计算最小值时需要用到
         temp = topDistance
         space[j] = min
+      }
+
+      if (matchIndex !== -1) {
+        // 判断结果是否已经被匹配过
+        if (!matchPositionList.includes(matchIndex)) {
+          matchPositionList.push(matchIndex)
+        }
+
+        continuous++
+      } else {
+        // 设置最长的连续字符
+        if (result.continuous < continuous) {
+          result.continuous = continuous
+        }
+
+        continuous = 0
       }
     }
 
@@ -92,9 +101,13 @@ function levennsheinDistance (source, target) {
  * @property {number} count
  * @property {number} position
  * @property {number} distance
+ * @param {string} source
+ * @param {string} target
  * @return {number} similarity 相似度
  */
-function calcSimilarity (data = {}, sourceLength, targetLength) {
+function calcSimilarity (data = {}, source, target) {
+  const sourceLength = source.length
+  const targetLength = target.length
   const WEIGHT_CONFIG = {
     // 匹配到的最大长度
     continuous: 35,
@@ -105,6 +118,8 @@ function calcSimilarity (data = {}, sourceLength, targetLength) {
     // 编辑文本的距离
     distance: 35
   }
+
+  // console.log(source, target, data.continuous, targetLength)
 
   return (
     (1 - data.distance / Math.max(sourceLength, targetLength)) * WEIGHT_CONFIG.distance +
@@ -141,7 +156,7 @@ function getMaxSimilarity (target, match, options) {
       getCompareValue(value, caseSensitive)
     )
 
-    const similarity = calcSimilarity(result, match.length, value.length)
+    const similarity = calcSimilarity(result, match, value)
     // console.log(match, value, similarity, JSON.stringify(result))
 
     if (!isFinite(similarity)) {
