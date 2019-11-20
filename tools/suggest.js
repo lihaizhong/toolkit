@@ -4,10 +4,10 @@
  * @param {string} compare
  * @return {number} distance
  */
-function editDistance(target, compare) {
-  const lenA = target.length;
-  const lenB = compare.length;
-  const space = new Array(lenB);
+function editDistance (target, compare) {
+  const lenA = target.length
+  const lenB = compare.length
+  const space = new Array(lenB)
   const result = {
     // 最大的匹配词长度
     maxLength: -1,
@@ -17,94 +17,93 @@ function editDistance(target, compare) {
     position: lenA,
     // 最短编辑路径
     distance: -1
-  };
+  }
 
-  function modifyResult(conj, pos) {
-    const len = conj.length;
+  function modifyResult (conj, pos) {
+    const len = conj.length
     if (len) {
       // 设置最大匹配字符串长度
       if (len > result.maxLength) {
-        result.maxLength = len;
+        result.maxLength = len
       }
       // 设置所有匹配字符的数量
-      result.count += len;
+      result.count += len
       // 设置首个匹配字符位置
-      if (pos != -1 && result.position > pos) {
-        result.position = pos;
+      if (pos !== -1 && result.position > pos) {
+        result.position = pos
       }
     }
   }
 
   // 过滤目标或者比较值为空字符串的情况
-  if (target === "" || compare === "") {
-    return result;
+  if (target === '' || compare === '') {
+    return result
   }
 
   for (let i = 1; i <= lenA; i++) {
-    let old = space[0] === undefined ? 0 : space[0];
-    space[0] = i;
-    const curA = target[i - 1];
+    let old = space[0] === undefined ? 0 : space[0]
+    space[0] = i
+    const curA = target[i - 1]
     // 是否连续匹配到字符
-    let isContinue = false;
+    let isContinue = false
     // 是否匹配到字符
-    let isMatched = false;
+    let isMatched = false
     // 匹配到的连续字符
-    let continuousChar = "";
+    let continuousChar = ''
     // 匹配到的最终位置
-    let finalPos = -1;
+    let finalPos = -1
 
     for (let j = 1; j <= lenB; j++) {
-      const tmp = space[j] === undefined ? 0 : space[j];
-      const curPos = j - 1;
-      const curB = compare[curPos];
+      const tmp = space[j] === undefined ? 0 : space[j]
+      const curPos = j - 1
+      const curB = compare[curPos]
 
       // 是否匹配到字符
-      if (curA == curB) {
-        space[j] = old;
+      if (curA === curB) {
+        space[j] = old
 
         if (finalPos === -1 || finalPos > curPos) {
-          finalPos = curPos;
+          finalPos = curPos
         }
 
         // 确保只匹配成功一次
         if (!isContinue) {
-          isMatched = true;
+          isMatched = true
           // 是否已经匹配到字符串，并且保证匹配的字符串可查询
           isContinue =
-            target[i - 2] == compare[j - 2] &&
-            compare.indexOf(continuousChar + curA) != -1;
+            target[i - 2] === compare[j - 2] && compare.indexOf(continuousChar + curA) !== -1
         }
       } else {
         // 获得最小编辑距离路径
-        space[j] = Math.min(tmp + 1, space[curPos] + 1, old + 1);
+        space[j] = Math.min(tmp + 1, space[curPos] + 1, old + 1)
       }
-      old = tmp;
+      old = tmp
     }
 
     // 如果是最后一个字符，无论字符串是否连续都执行设置结果集
-    if (lenA == i) {
+    if (lenA === i) {
       // 如果是连续的字符串，就拼接最后一个字符
       if (isContinue) {
-        continuousChar += curA;
-        isContinue = isMatched = false;
+        continuousChar += curA
+        isContinue = isMatched = false
       } else if (isMatched) {
-        continuousChar += curA;
-        isMatched = false;
+        continuousChar += curA
+        isMatched = false
       }
     }
 
     // 如果是连续的字符串，就拼接这个字符；否则去设置结果集
     if (isContinue || isMatched) {
-      continuousChar += curA;
+      continuousChar += curA
     } else {
-      modifyResult(continuousChar, finalPos);
+      modifyResult(continuousChar, finalPos)
     }
   }
 
   // 设置编辑距离
-  result.distance = space[lenB];
+  result.distance = space[lenB]
 
-  return result;
+  return result
 }
 
 /**
@@ -116,9 +115,9 @@ function editDistance(target, compare) {
  * @property {number} distance
  * @return {number} similarity 相似度
  */
-function calcSimilarity(data = {}) {
+function calcSimilarity (data = {}, length) {
   if (!data.count) {
-    return -Infinity;
+    return -Infinity
   }
 
   const WEIGHT_CONFIG = {
@@ -130,14 +129,15 @@ function calcSimilarity(data = {}) {
     position: 5,
     // 编辑文本的距离
     distance: 30
-  };
+  }
 
   return (
-    data.maxLength * WEIGHT_CONFIG.maxLength +
-    data.count * WEIGHT_CONFIG.count -
-    data.position * WEIGHT_CONFIG.position -
-    data.distance * WEIGHT_CONFIG.distance
-  );
+    (data.maxLength * WEIGHT_CONFIG.maxLength +
+      data.count * WEIGHT_CONFIG.count -
+      data.position * WEIGHT_CONFIG.position -
+      data.distance * WEIGHT_CONFIG.distance) /
+    length
+  )
 }
 
 /**
@@ -146,8 +146,8 @@ function calcSimilarity(data = {}) {
  * @param {boolean} caseSensitive 是否区分大小写
  * @return {string} result 转换后的待比较值
  */
-function getCompareValue(value, caseSensitive) {
-  return caseSensitive ? value : value.toLowerCase();
+function getCompareValue (value, caseSensitive) {
+  return caseSensitive ? value : value.toLowerCase()
 }
 
 /**
@@ -157,29 +157,29 @@ function getCompareValue(value, caseSensitive) {
  * @param {object} options
  * @return {number} similarity 最大相似度
  */
-function getMaxSimilarity(target, match, options) {
-  const { keyNameList, caseSensitive } = options;
+function getMaxSimilarity (target, match, options) {
+  const { keyNameList, caseSensitive } = options
   return keyNameList.reduce((accumulator, currentValue) => {
-    const value = getValue(target, currentValue);
+    const value = getValue(target, currentValue)
 
     const result = editDistance(
       getCompareValue(match, caseSensitive),
-      getCompareValue(value, canSensitive)
-    );
+      getCompareValue(value, caseSensitive)
+    )
 
-    const similarity = calcSimilarity(result);
+    const similarity = calcSimilarity(result, value.length)
     // console.log(match, value, similarity, JSON.stringify(result))
 
     if (isFinite(similarity)) {
-      return accumulator;
+      return accumulator
     } else if (isFinite(accumulator)) {
-      return similarity;
+      return similarity
     } else if (accumulator > similarity) {
-      return accumulator;
+      return accumulator
     }
 
-    return similarity;
-  }, -Infinity);
+    return similarity
+  }, -Infinity)
 }
 
 /**
@@ -188,20 +188,20 @@ function getMaxSimilarity(target, match, options) {
  * @param {string} key
  * @return {string} value
  */
-function getValue(target, key) {
-  const keyType = typeof key;
+function getValue (target, key) {
+  const keyType = typeof key
   if (
     target !== null &&
-    typeof target === "object" &&
-    (keyType === "string" || keyType === "number") &&
-    key !== ""
+    typeof target === 'object' &&
+    (keyType === 'string' || keyType === 'number') &&
+    key !== ''
   ) {
-    return target[key];
-  } else if (typeof target === "string") {
-    return target;
+    return target[key]
+  } else if (typeof target === 'string') {
+    return target
   }
 
-  return JSON.stringify(target);
+  return JSON.stringify(target)
 }
 
 /**
@@ -209,11 +209,11 @@ function getValue(target, key) {
  * @param {string|array} keyNameList
  * @return {array} keyNameList
  */
-function parseKeyNameList(keyNameList) {
-  if (typeof keyNameList === "string") {
-    return keyNameList.split(",");
+function parseKeyNameList (keyNameList) {
+  if (typeof keyNameList === 'string') {
+    return keyNameList.split(',')
   } else if (!(keyNameList instanceof Array)) {
-    throw new Error("keyNameList 必须是字符串类型或者数组类型");
+    throw new Error('keyNameList 必须是字符串类型或者数组类型')
   }
 }
 
@@ -227,35 +227,35 @@ function parseKeyNameList(keyNameList) {
  * @property {boolean} caseSensitive 区分大小写
  * @returns {array} sortList 排完序的数组
  */
-export default function suggest(
+export default function suggest (
   rowList,
   match,
   options = {
-    keyNameList: ["value"],
+    keyNameList: ['value'],
     filterNoMatch: true,
     caseSensitive: false
   }
 ) {
-  const { filterNoMatch } = options;
-  const len = rowList.length;
-  const result = [];
+  const { filterNoMatch } = options
+  const len = rowList.length
+  const result = []
 
-  const keyNameList = parseKeyNameList(options.keyNameList);
-  const opts = Object.assign({}, options, { keyNameList });
+  const keyNameList = parseKeyNameList(options.keyNameList)
+  const opts = Object.assign({}, options, { keyNameList })
 
   // 遍历每一个数据，获得数据的编辑距离以及其它关键属性
   for (let i = 0; i < len; i++) {
-    const data = rowList[i];
+    const data = rowList[i]
 
     // 获取相似度
-    const similarity = getMaxSimilarity(data, match, opts);
+    const similarity = getMaxSimilarity(data, match, opts)
 
     // 过滤完全没有匹配到的数据
     if (filterNoMatch && !isFinite(similarity)) {
-      continue;
+      continue
     }
 
-    result.push({ similarity, data });
+    result.push({ similarity, data })
   }
 
   return (
@@ -263,14 +263,14 @@ export default function suggest(
       // 根据数据的相似度进行排序
       .sort((a, b) => {
         if (isFinite(b.similarity)) {
-          return -1;
+          return -1
         } else if (isFinite(a.similarity)) {
-          return 1;
+          return 1
         } else {
-          return b.similarity - a.similarity;
+          return b.similarity - a.similarity
         }
       })
       // 还原数据结构
       .map(({ data }) => data)
-  );
+  )
 }
