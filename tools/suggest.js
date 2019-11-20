@@ -1,107 +1,82 @@
 /**
- * 编辑距离算法
- * @param {string} target
- * @param {string} compare
+ * 编辑距离算法(LD algorithm)
+ * @param {string} source 输入的内容
+ * @param {string} target 匹配的目标
  * @return {number} distance
  */
-function editDistance (target, compare) {
-  const lenA = target.length
-  const lenB = compare.length
-  const space = new Array(lenB)
+function levennsheinDistance (source, target) {
+  const sourceLength = source.length
+  const targetLength = target.length
+  const space = new Array(targetLength)
   const result = {
     // 最大的匹配词长度
-    maxLength: 0,
+    continuous: 0,
     // 匹配词总个数
     count: 0,
     // 首个匹配字符的位置
-    position: lenA,
+    position: targetLength,
     // 最短编辑路径
     distance: -1
   }
 
-  function modifyResult (conj, pos) {
-    const len = conj.length
-    if (len) {
-      // 设置最大匹配字符串长度
-      if (len > result.maxLength) {
-        result.maxLength = len
-      }
-      // 设置所有匹配字符的数量
-      result.count += len
-      // 设置首个匹配字符位置
-      if (pos !== -1 && result.position > pos) {
-        result.position = pos
-      }
-    }
-  }
-
   // 过滤目标或者比较值为空字符串的情况
-  if (target === '' || compare === '') {
-    return result
-  }
+  if (sourceLength === 0) {
+    result.distance = targetLength
+  } else if (targetLength === 0) {
+    result.distance = sourceLength
+  } else {
+    const matchPositionList = []
+    let continuous = 0
+    let modifyNum = 0
 
-  for (let i = 1; i <= lenA; i++) {
-    let old = space[0] === undefined ? 0 : space[0]
-    space[0] = i
-    const curA = target[i - 1]
-    // 是否连续匹配到字符
-    let isContinue = false
-    // 是否匹配到字符
-    let isMatched = false
-    // 匹配到的连续字符
-    let continuousChar = ''
-    // 匹配到的最终位置
-    let finalPos = -1
+    for (let i = 0; i < sourceLength; i++) {
+      const sourceChar = source[i]
+      let temp = i
 
-    for (let j = 1; j <= lenB; j++) {
-      const tmp = space[j] === undefined ? 0 : space[j]
-      const curPos = j - 1
-      const curB = compare[curPos]
+      for (let j = 0; j < targetLength; j++) {
+        const targetChar = target[j]
+        const prevDistance = j === 0 ? i + 1 : space[j - 1]
+        const topDistance = space[j] === undefined ? j + 1 : space[j]
 
-      // 是否匹配到字符
-      if (curA === curB) {
-        space[j] = old
+        if (sourceChar === targetChar) {
+          modifyNum = 0
+          continuous++
 
-        if (finalPos === -1 || finalPos > curPos) {
-          finalPos = curPos
+          if (!matchPositionList.includes(j)) {
+            matchPositionList.push(j)
+          }
+
+          // 设置首位匹配到的字符
+          if (result.position === targetLength) {
+            result.position = j
+          }
+        } else {
+          // 设置最长的连续字符
+          if (result.continuous < continuous) {
+            result.continuous = continuous
+          }
+          modifyNum = 1
+          continuous = 0
         }
 
-        // 确保只匹配成功一次
-        if (!isContinue) {
-          isMatched = true
-          // 是否已经匹配到字符串，并且保证匹配的字符串可查询
-          isContinue =
-            target[i - 2] === compare[j - 2] && compare.indexOf(continuousChar + curA) !== -1
-        }
-      } else {
-        // 获得最小编辑距离路径
-        space[j] = Math.min(tmp + 1, space[curPos] + 1, old + 1)
-      }
-      old = tmp
-    }
+        const min = Math.min(prevDistance + 1, topDistance + 1, temp + modifyNum)
 
-    // 如果是最后一个字符，无论字符串是否连续都执行设置结果集
-    if (lenA === i) {
-      // 如果是连续的字符串，就拼接最后一个字符
-      if (isContinue) {
-        continuousChar += curA
-        isContinue = isMatched = false
-      } else if (isMatched) {
-        continuousChar += curA
-        isMatched = false
+        temp = topDistance
+        space[j] = min
       }
     }
 
-    // 如果是连续的字符串，就拼接这个字符；否则去设置结果集
-    if (isContinue || isMatched) {
-      continuousChar += curA
-    } else {
-      modifyResult(continuousChar, finalPos)
+    // 设置最长的连续字符
+    if (result.continuous < continuous) {
+      result.continuous = continuous
     }
+    // 设置匹配到的数量
+    result.count = matchPositionList.length
+    // 设置编辑距离
+    result.distance = space[targetLength - 1]
   }
 
-  // 设置编辑距离
-  result.distance = space[lenB]
+  // console.log(source || '【空】', target || '【空】', space, result.distance)
 
   return result
 }
@@ -115,33 +90,34 @@ function editDistance (target, compare) {
  * @property {number} distance
  * @return {number} similarity 相似度
  */
-function calcSimilarity (data = {}, length) {
+function calcSimilarity (data = {}, sourceLength, targetLength) {
   const WEIGHT_CONFIG = {
     // 匹配到的最大长度
-    maxLength: 40,
+    continuous: 35,
     // 匹配到的个数
     count: 25,
     // 匹配到的位置
     position: 5,
     // 编辑文本的距离
-    distance: 30
+    distance: 35
   }
 
   return (
-    (data.maxLength * WEIGHT_CONFIG.maxLength - data.distance * WEIGHT_CONFIG.distance) / length +
-    data.count * WEIGHT_CONFIG.count -
-    data.position * WEIGHT_CONFIG.position
+    (1 - data.distance / Math.max(sourceLength, targetLength)) * WEIGHT_CONFIG.distance +
+    (data.continuous / targetLength) * WEIGHT_CONFIG.continuous +
+    (data.count / targetLength) * WEIGHT_CONFIG.count +
+    (1 - data.position / targetLength) * WEIGHT_CONFIG.position
   )
 }
 
 /**
  * 获取待比较的值
- * @param {string} value 待比较的原始值
+ * @param {string} source 待比较的原始值
  * @param {boolean} caseSensitive 是否区分大小写
  * @return {string} result 转换后的待比较值
  */
-function getCompareValue (value, caseSensitive) {
-  return caseSensitive ? value : value.toLowerCase()
+function getCompareValue (source, caseSensitive) {
+  return caseSensitive ? source : source.toLowerCase()
 }
 
 /**
@@ -156,12 +132,12 @@ function getMaxSimilarity (target, match, options) {
   return keyNameList.reduce((accumulator, currentValue) => {
     const value = getValue(target, currentValue)
 
-    const result = editDistance(
+    const result = levennsheinDistance(
       getCompareValue(match, caseSensitive),
       getCompareValue(value, caseSensitive)
     )
 
-    const similarity = calcSimilarity(result, value.length)
+    const similarity = calcSimilarity(result, match.length, value.length)
     // console.log(match, value, similarity, JSON.stringify(result))
 
     if (!isFinite(similarity)) {
