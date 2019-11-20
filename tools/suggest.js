@@ -19,6 +19,12 @@ function levennsheinDistance (source, target) {
     distance: -1
   }
 
+  function setContinuous (continuous) {
+    if (result.continuous < continuous) {
+      result.continuous = continuous
+    }
+  }
+
   // 过滤目标或者比较值为空字符串的情况
   if (sourceLength === 0) {
     result.distance = targetLength
@@ -68,44 +74,31 @@ function levennsheinDistance (source, target) {
 
       // 如果匹配到了结果
       if (matchIndex !== -1) {
-        if (continuous === 0) {
-          continuous++
-        } else if (matchIndex !== 0 && source[i - 1] === target[matchIndex - 1]) {
+        if (continuous === 0 || (matchIndex > 0 && source[i - 1] === target[matchIndex - 1])) {
           continuous++
         } else {
           // 设置最长的连续字符
-          if (result.continuous < continuous) {
-            result.continuous = continuous
-          }
-
+          setContinuous(continuous)
           continuous = 1
         }
 
-        // 判断结果是否已经被匹配过
-        if (!matchPositionList.includes(matchIndex)) {
-          matchPositionList.push(matchIndex)
-        }
+        matchPositionList.push(matchIndex)
       } else {
         // 设置最长的连续字符
-        if (result.continuous < continuous) {
-          result.continuous = continuous
-        }
-
+        setContinuous(continuous)
         continuous = 0
       }
     }
 
     // 设置最长的连续字符
-    if (result.continuous < continuous) {
-      result.continuous = continuous
-    }
+    setContinuous(continuous)
     // 设置匹配到的数量
     result.count = matchPositionList.length
     // 设置编辑距离
     result.distance = space[targetLength - 1]
   }
 
-  // console.log(source || '【空】', target || '【空】', space, result.distance)
+  console.log(source || '【空】', target || '【空】', space, result)
 
   return result
 }
