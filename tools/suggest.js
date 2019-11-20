@@ -42,6 +42,7 @@ function levennsheinDistance (source, target) {
           modifyNum = 0
           continuous++
 
+          // 判断结果是否已经被匹配过
           if (!matchPositionList.includes(j)) {
             matchPositionList.push(j)
           }
@@ -59,6 +60,7 @@ function levennsheinDistance (source, target) {
           continuous = 0
         }
 
+        // 获取增，删，改和不变得到的最小值
         const min = Math.min(prevDistance + 1, topDistance + 1, temp + modifyNum)
 
         temp = topDistance
