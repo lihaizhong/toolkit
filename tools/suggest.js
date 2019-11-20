@@ -227,7 +227,7 @@ export default function suggest (rowList, match, options) {
     const similarity = getMaxSimilarity(data, match, opts)
 
     // 过滤完全没有匹配到的数据
-    if (filterNoMatch && !isFinite(similarity)) {
+    if (filterNoMatch && (!isFinite(similarity) || similarity === 0)) {
       continue
     }
 
