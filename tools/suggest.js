@@ -256,13 +256,15 @@ class YouNeedSuggest {
     const sourceLength = source.length
     const targetLength = target.length
     const { weight: WEIGHT_CONFIG } = this.options
-
-    return (
+    const similarity =
       (1 - data.distance / Math.max(sourceLength, targetLength)) * WEIGHT_CONFIG.distance +
       (1 - data.position / targetLength) * WEIGHT_CONFIG.position +
       (data.continuous / targetLength) * WEIGHT_CONFIG.continuous +
       (data.count / targetLength) * WEIGHT_CONFIG.count
-    )
+
+    // console.log(source, target, data, similarity)
+
+    return similarity
   }
 
   /**
