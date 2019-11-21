@@ -187,11 +187,11 @@ class YouNeedSuggest {
   parseWeight (weight) {
     const defaultWeight = {
       // 匹配到的最大长度
-      continuous: 35,
+      continuous: 40,
       // 匹配到的个数
       count: 20,
       // 匹配到的位置
-      position: 10,
+      position: 5,
       // 编辑文本的距离
       distance: 35
     }
