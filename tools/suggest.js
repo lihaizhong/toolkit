@@ -4,7 +4,7 @@
  * @param {string} target 匹配的目标
  * @return {object}
  */
-function levennsheinDistance (source, target) {
+function levensheinDistance (source, target) {
   const sourceLength = source.length
   const targetLength = target.length
   const space = new Array(targetLength)
@@ -318,7 +318,7 @@ class YouNeedSuggest {
     return keyNameList.reduce((accumulator, currentValue) => {
       const value = this.getValue(target, currentValue)
       // 获得变量因子
-      const result = levennsheinDistance(this.getCompareValue(match), this.getCompareValue(value))
+      const result = levensheinDistance(this.getCompareValue(match), this.getCompareValue(value))
       // 计算相似度
       const similarity = this.calcSimilarity(result, match, value)
       // console.log(match, value, similarity, JSON.stringify(result))
