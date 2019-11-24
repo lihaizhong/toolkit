@@ -124,15 +124,8 @@ class YouNeedSuggest {
   constructor (rowList, match, options) {
     this.rowList = rowList
     this.match = match
-    this.options = Object.assign(
-      {
-        keyNameList: ['value'],
-        filterNoMatch: true,
-        caseSensitive: false,
-        weight: undefined
-      },
-      options
-    )
+    this.defaults = this.setDefaults()
+    this.options = Object.assign({}, this.defaults, options)
 
     const { keyNameList, weight } = this.options
 
@@ -181,25 +174,31 @@ class YouNeedSuggest {
   }
 
   /**
+   * 设置默认值
+   */
+  setDefaults () {
+    return {
+      keyNameList: ['value'],
+      filterNoMatch: true,
+      caseSensitive: false,
+      weight: {
+        // 匹配到的最大长度
+        continuous: 40,
+        // 匹配到的个数
+        count: 20,
+        // 匹配到的位置
+        position: 5,
+        // 编辑文本的距离
+        distance: 35
+      }
+    }
+  }
+
+  /**
    * 解析权重配置
    * @param {object} weight 权重配置
    */
   parseWeight (weight) {
-    const defaultWeight = {
-      // 匹配到的最大长度
-      continuous: 40,
-      // 匹配到的个数
-      count: 20,
-      // 匹配到的位置
-      position: 5,
-      // 编辑文本的距离
-      distance: 35
-    }
-
-    if (weight === undefined) {
-      return defaultWeight
-    }
-
     const keywords = ['continuous', 'count', 'position', 'distance']
 
     for (let i = 0; i < keywords.length; i++) {
@@ -207,7 +206,7 @@ class YouNeedSuggest {
 
       if (typeof weight[keyword] !== 'number') {
         console.warn(`【options.weight】${keyword}必须是一个数字`)
-        return defaultWeight
+        return Object.assign({}, this.defaults.weight)
       }
     }
 
