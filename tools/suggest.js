@@ -199,13 +199,18 @@ class YouNeedSuggest {
    * @param {object} weight 权重配置
    */
   parseWeight (weight) {
+    if (Object.prototype.toString.call(weight) !== '[object Object]') {
+      console.warn('weight 必须是一个对象')
+      return Object.assign({}, this.defaults.weight)
+    }
+
     const keywords = ['continuous', 'count', 'position', 'distance']
 
     for (let i = 0; i < keywords.length; i++) {
       const keyword = keywords[i]
 
       if (typeof weight[keyword] !== 'number') {
-        console.warn(`【options.weight】${keyword}必须是一个数字`)
+        console.warn(`【weight】${keyword}必须是一个数字`)
         return Object.assign({}, this.defaults.weight)
       }
     }
