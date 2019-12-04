@@ -1,6 +1,6 @@
 /**
- * @author Sangbaipi
- * @email sangbaipi@2dfire.com
+ * @author sky
+ * @email 854323752@qq.com
  * @create date 2018-08-27 02:45:53
  * @modify date 2018-08-27 02:45:53
  * @desc 倒计时 内部以 “毫秒” 为单位，对外抛出以 “秒” 为单位
@@ -16,8 +16,6 @@
  * @sub-key {String} seconds 剩余秒
  * @sub-key {Number} remain 剩余时间（单位：秒）
  */
-
-import './requestAnimationFrame'
 
 export default class CountDown {
   constructor (needRemainFormat) {
