@@ -15,7 +15,7 @@
 /* eslint no-restricted-syntax: "off" */
 /* eslint prefer-template: "off" */
 /* eslint-env es5 */
-;(function () {
+;(function (win) {
   var type = {
     isObj: function (o) {
       return (
@@ -118,8 +118,8 @@
     }
   }
 
-  window.db = function (isForeverStore) {
-    var store = isForeverStore ? window.localStorage : window.sessionStorage
+  win.db = function (isForeverStore) {
+    var store = isForeverStore ? win.localStorage : win.sessionStorage
     var storageTest = 'storageTest_' + new Date().getTime()
 
     if (store) {
@@ -140,4 +140,4 @@
 
     return new DataBase(store)
   }
-})()
+})(window)

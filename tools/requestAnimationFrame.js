@@ -6,38 +6,39 @@
  * @desc RequestAnimationFrame兼容
  */
 
-let lastTime = 0
-const vendors = ['webkit', 'moz']
-let requestAnimationFrame = window.requestAnimationFrame
-let cancelAnimationFrame = window.cancelAnimationFrame
+;(function (win) {
+  let lastTime = 0
+  const vendors = ['webkit', 'moz']
+  let requestAnimationFrame = win.requestAnimationFrame
+  let cancelAnimationFrame = win.cancelAnimationFrame
 
-for (var i = 0; !requestAnimationFrame && i < vendors.length; i++) {
-  requestAnimationFrame = window[vendors[i] + 'RequestAnimationFrame']
-  // Webkit中此取消方法的名字变了
-  cancelAnimationFrame =
-    window[vendors[i] + 'CancelAnimationFrame'] ||
-    window[vendors[i] + 'CancelRequestAnimationFrame']
-}
-
-// 模拟requestAnimationFrame
-if (!requestAnimationFrame) {
-  requestAnimationFrame = callback => {
-    var currTime = new Date().getTime()
-    var timeToCall = Math.max(0, 16.7 - (currTime - lastTime))
-    var id = window.setTimeout(function () {
-      callback()
-    }, timeToCall)
-    lastTime = currTime + timeToCall
-    return id
+  for (let i = 0; !requestAnimationFrame && i < vendors.length; i++) {
+    requestAnimationFrame = win[vendors[i] + 'RequestAnimationFrame']
+    // Webkit中此取消方法的名字变了
+    cancelAnimationFrame =
+      win[vendors[i] + 'CancelAnimationFrame'] || win[vendors[i] + 'CancelRequestAnimationFrame']
   }
-}
 
-// 模拟cancelAnimationFrame
-if (!cancelAnimationFrame) {
-  cancelAnimationFrame = id => {
-    clearTimeout(id)
+  // 模拟requestAnimationFrame
+  if (!requestAnimationFrame) {
+    requestAnimationFrame = callback => {
+      const currTime = new Date().getTime()
+      const timeToCall = Math.max(0, 16.7 - (currTime - lastTime))
+      const id = win.setTimeout(function () {
+        callback()
+      }, timeToCall)
+      lastTime = currTime + timeToCall
+      return id
+    }
   }
-}
 
-window.requestAnimationFrame = requestAnimationFrame
-window.cancelAnimationFrame = cancelAnimationFrame
+  // 模拟cancelAnimationFrame
+  if (!cancelAnimationFrame) {
+    cancelAnimationFrame = id => {
+      clearTimeout(id)
+    }
+  }
+
+  win.requestAnimationFrame = requestAnimationFrame
+  win.cancelAnimationFrame = cancelAnimationFrame
+})(window)
