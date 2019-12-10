@@ -38,7 +38,7 @@ function isThenable (val) {
  * @param {function} fn
  */
 function nextTick (fn) {
-  // TODO 完成宏任务处理
+  // 完成宏任务处理
   setTimeout(fn, 0)
 }
 
