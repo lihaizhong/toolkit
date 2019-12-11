@@ -35,7 +35,6 @@ export default class CountDown {
     this._nowTime = this._startTime = this._endTime = null
     this._timer = null
     this._remain = 0
-    this._breakpoint = {}
     this._callback = function () {}
   }
 
@@ -66,7 +65,7 @@ export default class CountDown {
   setTime (startTime, endTime, nowTime) {
     this._startTime = CountDown.formatTimestamp(startTime)
     this._endTime = CountDown.formatTimestamp(endTime)
-    this._nowTime = CountDown.formatTimestamp(nowTime)
+    this._nowTime = CountDown.formatTimestamp(nowTime || new Date())
     const remainTime = this._endTime - Math.max(this._startTime, this._nowTime)
     this.setRemainTime(remainTime > 0 ? remainTime : 0)
 
@@ -114,14 +113,14 @@ export default class CountDown {
 
     function __callback__ () {
       const timerEnd = Date.now()
-      const interval = parseInt((timerEnd - timerStart) / 1000) * 1000
+      const interval = Math.floor((timerEnd - timerStart) / 1000) * 1000
       const base = 1000
       let remain = this._remain
       let isFinished = false
 
       if (interval >= base) {
         // 确保时间是绝对精确的
-        timerStart = parseInt(timerEnd / base) * base + (timerStart % base)
+        timerStart = Math.floor(timerEnd / base) * base + (timerStart % base)
         // 由于requestAnimationFrame在离开页面后会出现暂停的效果，顾返回页面时，要减去中间的差值
         remain -= interval
         // 更新当前时间
@@ -144,11 +143,11 @@ export default class CountDown {
       }
 
       if (!isFinished) {
-        this._timer = requestAnimationFrame(__callback__.bind(this))
+        this._timer = requestAnimationFrame(__callback__)
       }
     }
 
-    this._timer = requestAnimationFrame(__callback__.bind(this))
+    this._timer = requestAnimationFrame(__callback__)
   }
 
   /**
@@ -186,19 +185,19 @@ export default class CountDown {
     remainFormat.remain = remain / 1000
 
     const dayFormat = 86400000
-    remainFormat.day = CountDown.formatTime(parseInt(remain / dayFormat))
+    remainFormat.day = CountDown.formatTime(Math.floor(remain / dayFormat))
     remain = remain % dayFormat
 
     const hoursFormat = 3600000
-    remainFormat.hours = CountDown.formatTime(parseInt(remain / hoursFormat))
+    remainFormat.hours = CountDown.formatTime(Math.floor(remain / hoursFormat))
     remain = remain % hoursFormat
 
     const minutesFormat = 60000
-    remainFormat.minutes = CountDown.formatTime(parseInt(remain / minutesFormat))
+    remainFormat.minutes = CountDown.formatTime(Math.floor(remain / minutesFormat))
     remain = remain % minutesFormat
 
     const secondsFormat = 1000
-    remainFormat.seconds = CountDown.formatTime(parseInt(remain / secondsFormat))
+    remainFormat.seconds = CountDown.formatTime(Math.floor(remain / secondsFormat))
 
     return remainFormat
   }
@@ -238,7 +237,7 @@ CountDown.formatTimestamp = function (time) {
   if (time instanceof Date) {
     result = time.getTime()
   } else if (!isNaN(time) && (typeof time === 'number' || typeof time === 'string')) {
-    result = Number(time)
+    result = +time
   } else if (isNaN(time) && typeof time === 'string') {
     time = CountDown.DateStringFixed(time)
     result = new Date(time).getTime()
@@ -246,7 +245,7 @@ CountDown.formatTimestamp = function (time) {
     result = Date.now()
   }
 
-  return parseInt(result / 1000) * 1000
+  return Math.floor(result / 1000) * 1000
 }
 
 /**
