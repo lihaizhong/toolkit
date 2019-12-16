@@ -1,3 +1,56 @@
+class ResultWrapper {
+  constructor (continuous, count, position, distance) {
+    this._options = {
+      // 最大的匹配词长度
+      continuous,
+      // 匹配词总个数
+      count,
+      // 首个匹配字符的位置
+      position,
+      // 最短编辑路径
+      distance
+    }
+  }
+
+  get () {
+    return Object.assign({}, this._options)
+  }
+
+  setContinuous (continuous) {
+    if (this._options.continuous < continuous) {
+      this._options.continuous = continuous
+    }
+  }
+
+  getContinuous () {
+    return this._options.continuous
+  }
+
+  setCount (count) {
+    this._options.count = count
+  }
+
+  getCount () {
+    return this._options.count
+  }
+
+  setPosition (position) {
+    this._options.position = position
+  }
+
+  getPosition () {
+    return this._options.position
+  }
+
+  setDistance (distance) {
+    this._options.distance = distance
+  }
+
+  getDistance () {
+    return this._options.distance
+  }
+}
+
 /**
  * 编辑距离算法(LD algorithm)
  * @param {string} source 输入的内容
@@ -8,28 +61,13 @@ function levensheinDistance (source, target) {
   const sourceLength = source.length
   const targetLength = target.length
   const space = new Array(targetLength)
-  const result = {
-    // 最大的匹配词长度
-    continuous: 0,
-    // 匹配词总个数
-    count: 0,
-    // 首个匹配字符的位置
-    position: targetLength,
-    // 最短编辑路径
-    distance: -1
-  }
-
-  function setContinuous (continuous) {
-    if (result.continuous < continuous) {
-      result.continuous = continuous
-    }
-  }
+  const result = new ResultWrapper(0, 0, targetLength, -1)
 
   // 过滤目标或者比较值为空字符串的情况
   if (sourceLength === 0) {
-    result.distance = targetLength
+    result.setDistance(targetLength)
   } else if (targetLength === 0) {
-    result.distance = sourceLength
+    result.setDistance(sourceLength)
   } else {
     // 保存所有匹配到的字符的index
     const matchPositionList = []
@@ -57,8 +95,8 @@ function levensheinDistance (source, target) {
           }
 
           // 设置首位匹配到的字符
-          if (result.position === targetLength) {
-            result.position = j
+          if (result.getPosition() === targetLength) {
+            result.setPosition(j)
           }
         } else {
           modifyNum = 1
@@ -84,29 +122,27 @@ function levensheinDistance (source, target) {
           continuous++
         } else {
           // 设置最长的连续字符
-          setContinuous(continuous)
+          result.setContinuous(continuous)
           continuous = 1
         }
 
         matchPositionList.push(matchIndex)
       } else {
         // 设置最长的连续字符
-        setContinuous(continuous)
+        result.setContinuous(continuous)
         continuous = 0
       }
     }
 
     // 设置最长的连续字符
-    setContinuous(continuous)
+    result.setContinuous(continuous)
     // 设置匹配到的数量
-    result.count = matchPositionList.length
+    result.setCount(matchPositionList.length)
     // 设置编辑距离
-    result.distance = space[targetLength - 1]
+    result.setDistance(space[targetLength - 1])
   }
 
-  // console.log(source || '【空】', target || '【空】', space, result)
-
-  return result
+  return result.get()
 }
 
 class YouNeedSuggest {
