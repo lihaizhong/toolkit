@@ -15,6 +15,7 @@ module.exports = {
   },
   plugins: ['html'],
   rules: {
-    'no-debugger': 0
+    'no-debugger': 0,
+    'space-before-function-paren': ['error', 'always']
   }
 }
