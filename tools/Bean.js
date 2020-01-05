@@ -1,9 +1,9 @@
 /**
  * config
- *  - type 必填，表示类型  可以是String、Number、Boolean、Array、泛型
- *  - itemType 必填（数组），表示数组子集类型
- *  - defaultValue 选填，表示默认值，如果不指定，Bean类会根据类型指定字符串
- *  - field 选填，表示后台对应的字段，如果不指定，就是当前的key。field可以是一个方法，参数为data，主要用于自定义数据
+ *  - type {any} 必填，表示类型  可以是String、Number、Boolean、Array、泛型
+ *  - itemType {any} 必填（数组），表示数组子集类型
+ *  - defaultValue {string} 选填，表示默认值，如果不指定，Bean类会根据类型指定字符串
+ *  - field {string|function} 选填，表示后台对应的字段，如果不指定，就是当前的key。field可以是一个方法，参数为data，主要用于自定义数据
  */
 
 /**
@@ -44,7 +44,7 @@ const valueParser = {
   typeOfNumber (fieldValue, defaultValue) {
     if (isSameType(fieldValue, Number)) {
       return fieldValue
-    } else if (isSameType(fieldValue, String) && !Number.isNaN(fieldValue)) {
+    } else if (isSameType(fieldValue, String) && /^\d+$/(fieldValue)) {
       return Number(fieldValue)
     }
 
@@ -58,10 +58,10 @@ const valueParser = {
     return defaultValue
   },
   typeOfArray (type, fieldValue, defaultValue) {
-    return (fieldValue || defaultValue).map(values => getValue({ type }, values))
+    return (fieldValue || defaultValue).map(value => getValue({ type }, value))
   },
   typeOfDefault (CustomBean, data) {
-    return new CustomBean.constructor(data)
+    return new CustomBean(data)
   }
 }
 
@@ -76,8 +76,16 @@ function getValue (config, data, key) {
   }
 
   let fieldValue
-  if (field || key) {
-    fieldValue = data[field || key]
+  if (field) {
+    fieldValue = data[field]
+  } else if (key) {
+    fieldValue = data[key]
+  } else {
+    fieldValue = data
+  }
+
+  if (typeof fieldValue === 'function') {
+    fieldValue = fieldValue(data)
   }
 
   switch (type) {
@@ -94,34 +102,27 @@ function getValue (config, data, key) {
   }
 }
 
-const filterReg = /^__bean_/
-
 export default class Bean {
   constructor (data = {}) {
     this.__bean_source__ = data
     this.__bean_target__ = null
+    this.__bean_raw_target = ''
     this.__bean_keys__ = []
   }
 
   _init () {
     if (!this.__bean_target__) {
-      const keys = this.__bean_keys__ = Object.keys(this).filter(key => !filterReg.test(key))
+      const keys = this.__bean_keys__ = Object.keys(this).filter(key => !/^__bean_/.test(key))
       const data = this.__bean_source__
 
       this.__bean_target__ = {}
       for (let i = 0; i < keys.length; i++) {
         const key = keys[i]
         const config = this[key] || {}
-        config.name = this.constructor.name
-        config.key = key
-        const value = getValue(config, data, key)
-
-        if (['Array', 'Object'].includes(Object.prototype.toString.call(value).slice(8, -1))) {
-          this.__bean_target__[key] = JSON.parse(JSON.stringify(value))
-        } else {
-          this.__bean_target__[key] = value
-        }
+        this.__bean_target__[key] = getValue(config, data, key)
       }
+
+      this.__bean_raw_target = JSON.stringify(this.__bean_target__)
     }
   }
 
@@ -132,5 +133,15 @@ export default class Bean {
 
   toSource () {
     return JSON.parse(JSON.stringify(this.__bean_source__))
+  }
+
+  restore () {
+    this._init()
+    this.__bean_target__ = JSON.parse(this.__bean_raw_target)
+  }
+
+  clone () {
+    this._init()
+    return JSON.parse(JSON.stringify(this.__bean_target__))
   }
 }
