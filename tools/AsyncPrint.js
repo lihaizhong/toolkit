@@ -1,3 +1,135 @@
+const printTemplateDefaultStyle = `
+* {
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  font-size: 12pt;
+  color: #000;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  caption-side: top;
+  empty-cells: show;
+}
+
+table th,
+table td {
+  padding: 8pt 0;
+  text-align: left;
+}
+
+caption {
+  width: 100%;
+  padding: 8pt 0;
+  text-align: left;
+  border: none;
+  border-bottom: 1pt solid #000;
+}
+@media screen {
+  section {
+    border: 1pt dashed #666;
+    padding: 14mm 12mm 10mm;
+  }
+}
+
+@media print {
+  @page A4 {
+    size: 210mm 290mm;
+    margin: 20mm 15mm;
+  }
+
+  section {
+    page: A4;
+    page-break-after: always;
+  }
+}
+
+.print-wrapper {
+  margin: 20pt auto;
+}
+
+/******** 公共CSS工具 START ********/
+
+.text-left {
+  text-align: left;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-middle {
+  vertical-align: middle;
+}
+
+.text-baseline {
+  vertical-align: baseline;
+}
+
+.font-bold {
+  font-weight: bold;
+}
+
+.font-normal {
+  font-weight: normal;
+}
+
+.border {
+  border: 1pt solid #000;
+}
+
+.no-border {
+  border: none;
+}
+
+.border-top {
+  border-top: 1pt solid #000;
+}
+
+.border-right {
+  border-right: 1pt solid #000;
+}
+
+.border-bottom {
+  border-bottom: 1pt solid #000;
+}
+
+.border-left {
+  border-left: 1pt solid #000;
+}
+
+.clearfix::after {
+  content: '';
+  clear: both;
+  display: block;
+  overflow: hidden;
+  font-size: 0;
+  height: 0;
+}
+
+.clearfix {
+  zoom: 1;
+}
+
+.fl {
+  float: left;
+}
+
+.fr {
+  float: right;
+}
+
+/******** 公共CSS工具 END ********/
+`
+
 /**
  * 创建模板
  * @param {string} body
@@ -29,174 +161,17 @@ function getPrintTemplate (body = '', options = {}) {
       <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1.0">
-        <title>${options.title || '打印页'}</title>
-        <style>
-          * {
-            margin: 0;
-            padding: 0;
-          }
-
-          html, body {
-            font-size: 12pt;
-            color: #000;
-          }
-
-          table {
-            width: 100%;
-            border-collapse: collapse;
-            caption-side: top;
-            empty-cells: show;
-          }
-
-          table th,
-          table td {
-            padding: 8pt 0;
-            text-align: left;
-          }
-
-          caption {
-            width: 100%;
-            padding: 8pt 0;
-            text-align: left;
-            border: none;
-            border-bottom: 1pt solid #000;
-          }
-          @media screen {
-            section {
-              border: 1pt dashed #666;
-              padding: 14mm 12mm 10mm;
-            }
-          }
-
-          @media print {
-            @page A4 {
-              size: 210mm 290mm;
-              margin: 20mm 15mm;
-            }
-
-            section {
-              page: A4;
-              page-break-after: always;
-            }
-          }
-
-          .print-wrapper {
-            margin: 20pt auto;
-          }
-          .card-time {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 13px;
-          }
-          .purchase .title {
-            font-size: 14px;
-            font-family: PingFangSC-Semibold, PingFang SC;
-            font-weight: 600;
-            color: rgba(60, 65, 68, 1);
-            line-height: 20px;
-            margin: 20px 0 10px;
-          }
-          .purchase  .member-information  span {
-            display: inline-block;
-            min-width: 100px;
-            margin: 0 20px 8px 0;
-          }
-          .total {
-            margin-top: 12px;
-            height: 20px;
-          }
-          .total  span {
-            float: right;
-            font-size: 14px;
-          }
-          .payment {
-            margin-top: 10px;
-          }
-
-          /******** 公共CSS工具 START ********/
-
-          .text-left {
-            text-align: left;
-          }
-
-          .text-center {
-            text-align: center;
-          }
-
-          .text-right {
-            text-align: right;
-          }
-
-          .text-middle {
-            vertical-align: middle;
-          }
-
-          .text-baseline {
-            vertical-align: baseline;
-          }
-
-          .font-bold {
-            font-weight: bold;
-          }
-
-          .font-normal {
-            font-weight: normal;
-          }
-
-          .border {
-            border: 1pt solid #000;
-          }
-
-          .no-border {
-            border: none;
-          }
-
-          .border-top {
-            border-top: 1pt solid #000;
-          }
-
-          .border-right {
-            border-right: 1pt solid #000;
-          }
-
-          .border-bottom {
-            border-bottom: 1pt solid #000;
-          }
-
-          .border-left {
-            border-left: 1pt solid #000;
-          }
-          .new-generation-date {
-            text-align: right;
-            padding-bottom: 20pt;
-          }
-          .new-b-wrap div {
-              float: left;
-              width: 50%;
-              padding-bottom: 10pt;
-            }
-            .new-b-wrap div:nth-child(2n) {
-              text-align: right;
-            }
-
-            .clearfix::after {
-              content: '';
-              clear: both;
-              display: block;
-              overflow: hidden;
-              font-size: 0;
-              height: 0;
-            }
-
-            .clearfix {
-              zoom: 1;
-            }
-
-          /******** 公共CSS工具 END ********/
-        </style>
+        <meta name="robots" content="none">
+        <meta name="renderer" content="webkit">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+        <meta http-equiv="cache-control" content="no-cache">
+        <meta http-equiv="Cache-Control" content="no-siteapp" />
+        <meta http-equiv="expires" content="Tue Jan 07 2020 11:19:57 GMT+0800" />
+        <title>${options.title}</title>
+        <style>${printTemplateDefaultStyle}</style>
       </head>
       <body>
-          <article class="print-wrapper" style="width: ${options.width || '210mm'};">
+          <article class="print-wrapper" style="width: ${options.width};">
             ${body}
           </article>
       </body>
@@ -208,7 +183,7 @@ class AsyncPrint {
   constructor (opener, options = {}) {
     // 打印页窗口句柄
     this.opener = opener
-    this._options = Object.assign({}, options)
+    this._options = Object.assign({ title: '打印页', width: '210mm' }, options)
   }
 
   exec (body = '') {

@@ -8,6 +8,8 @@
 
 /**
  * 判断数值类型是否为指定类型
+ * @param {any} value 数值
+ * @param {any} type 数据类型
  */
 function isSameType (value, type) {
   if (value === null || value === undefined) {
@@ -17,15 +19,67 @@ function isSameType (value, type) {
   }
 }
 
+function deepClone (target) {
+  // 通过原型对象获取对象类型
+  const type = Object.prototype.toString.call(target)
+  let source
+  if (type === '[object Array]') {
+    // 数组
+    source = []
+    if (target.length > 0) {
+      for (let i = 0; i < target.length; i++) {
+        source.push(deepClone(target[i]))
+      }
+    }
+  } else if (type === '[object Object]') {
+    // 对象
+    source = {}
+    for (const i in target) {
+      if (Object.prototype.hasOwnProperty.call(target, i)) {
+        source[i] = deepClone(target[i])
+      }
+    }
+  } else {
+    // 基本类型和方法可以直接赋值
+    source = target
+  }
+  return source
+}
+
 /**
-  * 设置默认值
-  */
+ * 设置默认值
+ * @param {any} type 数据类型
+ * @param {any} defaultValue 用户定义的默认数值
+ * @param {any} placeholderValue 默认数值
+ */
 function getDefaultValue (type, defaultValue, placeholderValue) {
   if (isSameType(defaultValue, type)) {
     return defaultValue
   } else {
     return placeholderValue
   }
+}
+
+/**
+ * 解析field对应的值
+ * @param {object} target
+ * @param {string|function} field
+ * @param {string} key
+ */
+function parseFieldValue (target, field, key) {
+  if (field) {
+    const typeOfField = typeof field
+
+    if (typeOfField === 'string') {
+      return target[field]
+    } else if (typeOfField === 'function') {
+      return field(target)
+    }
+  } else if (key) {
+    return target[key]
+  }
+
+  return undefined
 }
 
 /**
@@ -61,32 +115,21 @@ const valueParser = {
     return (fieldValue || defaultValue).map(value => getValue({ type }, value))
   },
   typeOfDefault (CustomBean, data) {
-    return new CustomBean(data)
+    return new CustomBean(data).toBean()
   }
 }
 
 /**
  * 设置各种类型的值
+ * @param {object} config 配置信息
+ * @property {any} type 字段类型。必传
+ * @property {any} itemType 数组项的字段类型。如果是数组，必传
+ * @param {any} data 数据
+ * @param {string} key 数据的key值
  */
 function getValue (config, data, key) {
-  const { name, type, itemType, field, defaultValue } = config
-
-  if (type === undefined || type === null) {
-    throw new Error(`[${name}] `)
-  }
-
-  let fieldValue
-  if (field) {
-    fieldValue = data[field]
-  } else if (key) {
-    fieldValue = data[key]
-  } else {
-    fieldValue = data
-  }
-
-  if (typeof fieldValue === 'function') {
-    fieldValue = fieldValue(data)
-  }
+  const { type, itemType, field, defaultValue } = config
+  const fieldValue = parseFieldValue(data, field, key)
 
   switch (type) {
     case String:
@@ -123,6 +166,7 @@ export default class Bean {
       }
 
       this.__bean_raw_target = JSON.stringify(this.__bean_target__)
+      Object.preventExtensions(this.__bean_target__)
     }
   }
 
@@ -132,16 +176,19 @@ export default class Bean {
   }
 
   toSource () {
-    return JSON.parse(JSON.stringify(this.__bean_source__))
+    const source = deepClone(this.__bean_source__)
+    return Object.preventExtensions(source)
   }
 
   restore () {
     this._init()
-    this.__bean_target__ = JSON.parse(this.__bean_raw_target)
+    const bean = JSON.parse(this.__bean_raw_target)
+    this.__bean_target__ = Object.preventExtensions(bean)
   }
 
   clone () {
     this._init()
-    return JSON.parse(JSON.stringify(this.__bean_target__))
+    const bean = deepClone(this.__bean_target__)
+    return Object.preventExtensions(bean)
   }
 }
