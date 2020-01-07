@@ -1,3 +1,4 @@
+// CSS 默认样式
 const printTemplateDefaultStyle = `
 * {
   margin: 0;
@@ -29,6 +30,7 @@ caption {
   border: none;
   border-bottom: 1pt solid #000;
 }
+
 @media screen {
   section {
     border: 1pt dashed #666;
@@ -48,12 +50,13 @@ caption {
   }
 }
 
-.print-wrapper {
+article.print-wrapper {
   margin: 20pt auto;
 }
+`
 
-/******** 公共CSS工具 START ********/
-
+// CSS工具样式
+const getTemplateToolStyle = `
 .text-left {
   text-align: left;
 }
@@ -86,10 +89,6 @@ caption {
   border: 1pt solid #000;
 }
 
-.no-border {
-  border: none;
-}
-
 .border-top {
   border-top: 1pt solid #000;
 }
@@ -106,13 +105,17 @@ caption {
   border-left: 1pt solid #000;
 }
 
+.no-border {
+  border: none;
+}
+
 .clearfix::after {
   content: '';
   clear: both;
   display: block;
-  overflow: hidden;
-  font-size: 0;
   height: 0;
+  font-size: 0;
+  display: block;
 }
 
 .clearfix {
@@ -126,28 +129,12 @@ caption {
 .fr {
   float: right;
 }
-
-/******** 公共CSS工具 END ********/
 `
 
 /**
  * 创建模板
  * @param {string} body
  * @param {object} options
- *
- * # 公共CSS class #
- * text-left
- * text-right
- * text-center
- * text-right
- * font-bold
- * font-normal
- * border
- * no-border
- * border-top
- * border-right
- * border-bottom
- * border-left
  *
  * 注：
  * 1. section是关键标签，用来表示A4纸张，请谨慎使用
@@ -168,7 +155,7 @@ function getPrintTemplate (body = '', options = {}) {
         <meta http-equiv="Cache-Control" content="no-siteapp" />
         <meta http-equiv="expires" content="Tue Jan 07 2020 11:19:57 GMT+0800" />
         <title>${options.title}</title>
-        <style>${printTemplateDefaultStyle}</style>
+        <style>${printTemplateDefaultStyle + getTemplateToolStyle}</style>
       </head>
       <body>
           <article class="print-wrapper" style="width: ${options.width};">
