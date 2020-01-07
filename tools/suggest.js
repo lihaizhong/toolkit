@@ -1,5 +1,5 @@
 class ResultWrapper {
-  constructor(continuous, count, position, distance) {
+  constructor (continuous, count, position, distance) {
     this._options = {
       // 最大的匹配词长度
       continuous,
@@ -12,41 +12,41 @@ class ResultWrapper {
     }
   }
 
-  get() {
+  get () {
     return Object.assign({}, this._options)
   }
 
-  setContinuous(continuous) {
+  setContinuous (continuous) {
     if (this._options.continuous < continuous) {
       this._options.continuous = continuous
     }
   }
 
-  getContinuous() {
+  getContinuous () {
     return this._options.continuous
   }
 
-  setCount(count) {
+  setCount (count) {
     this._options.count = count
   }
 
-  getCount() {
+  getCount () {
     return this._options.count
   }
 
-  setPosition(position) {
+  setPosition (position) {
     this._options.position = position
   }
 
-  getPosition() {
+  getPosition () {
     return this._options.position
   }
 
-  setDistance(distance) {
+  setDistance (distance) {
     this._options.distance = distance
   }
 
-  getDistance() {
+  getDistance () {
     return this._options.distance
   }
 }
@@ -57,7 +57,7 @@ class ResultWrapper {
  * @param {string} target 匹配的目标
  * @return {object}
  */
-function levensheinDistance(source, target) {
+function levensheinDistance (source, target) {
   const sourceLength = source.length
   const targetLength = target.length
   const space = new Array(targetLength)
@@ -157,7 +157,7 @@ class YouNeedSuggest {
    * @property {object} weight 权重配置
    * @returns {array} sortList 排完序的数组
    */
-  constructor(rowList, match, options) {
+  constructor (rowList, match, options) {
     this.rowList = rowList
     this.match = match
     this.defaults = this.setDefaults()
@@ -174,7 +174,7 @@ class YouNeedSuggest {
   /**
    * 获取建议的结果
    */
-  get() {
+  get () {
     const { filterNoMatch } = this.options
     const len = this.rowList.length
     const result = []
@@ -212,7 +212,7 @@ class YouNeedSuggest {
   /**
    * 设置默认值
    */
-  setDefaults() {
+  setDefaults () {
     return {
       keyNameList: ['value'],
       filterNoMatch: true,
@@ -234,7 +234,7 @@ class YouNeedSuggest {
    * 解析权重配置
    * @param {object} weight 权重配置
    */
-  parseWeight(weight) {
+  parseWeight (weight) {
     if (Object.prototype.toString.call(weight) !== '[object Object]') {
       console.warn('weight 必须是一个对象')
       return Object.assign({}, this.defaults.weight)
@@ -271,7 +271,7 @@ class YouNeedSuggest {
    * @param {string|array} keyNameList
    * @return {array} keyNameList
    */
-  parseKeyNameList(keyNameList) {
+  parseKeyNameList (keyNameList) {
     if (typeof keyNameList === 'string') {
       return keyNameList.split(',')
     } else if (keyNameList instanceof Array) {
@@ -292,7 +292,7 @@ class YouNeedSuggest {
    * @param {string} target
    * @return {number} similarity 相似度
    */
-  calcSimilarity(data = {}, source, target) {
+  calcSimilarity (data = {}, source, target) {
     const sourceLength = source.length
     const targetLength = target.length
     const { weight: WEIGHT_CONFIG } = this.options
@@ -313,7 +313,7 @@ class YouNeedSuggest {
    * @param {string} key
    * @return {string} value
    */
-  getValue(target, key) {
+  getValue (target, key) {
     const keyType = typeof key
     if (
       target !== null &&
@@ -342,7 +342,7 @@ class YouNeedSuggest {
    * @param {string} source 待比较的原始值
    * @return {string} result 转换后的待比较值
    */
-  getCompareValue(source) {
+  getCompareValue (source) {
     const { caseSensitive } = this.options
     return caseSensitive ? source : source.toLowerCase()
   }
@@ -353,7 +353,7 @@ class YouNeedSuggest {
    * @param {string} match
    * @return {number} 最大相似度
    */
-  getMaxSimilarity(target, match) {
+  getMaxSimilarity (target, match) {
     const { keyNameList } = this.options
     return keyNameList.reduce((accumulator, currentValue) => {
       const value = this.getValue(target, currentValue)
@@ -376,6 +376,6 @@ class YouNeedSuggest {
   }
 }
 
-export default function suggest(rowList, match, options) {
+export default function suggest (rowList, match, options) {
   return new YouNeedSuggest(rowList, match, options).get()
 }

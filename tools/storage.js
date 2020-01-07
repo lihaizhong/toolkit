@@ -6,15 +6,6 @@
  * @desc Storage封装
  */
 
-/* eslint no-var: "off" */
-/* eslint func-names: "off" */
-/* eslint object-shorthand: "off" */
-/* eslint comma-dangle: "off" */
-/* eslint prefer-rest-params: "off" */
-/* eslint no-plusplus: "off" */
-/* eslint no-restricted-syntax: "off" */
-/* eslint prefer-template: "off" */
-/* eslint-env es5 */
 ;(function (win) {
   var type = {
     isObj: function (o) {
