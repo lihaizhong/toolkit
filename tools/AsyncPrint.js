@@ -155,7 +155,8 @@ function getPrintTemplate (body = '', options = {}) {
         <meta http-equiv="Cache-Control" content="no-siteapp" />
         <meta http-equiv="expires" content="Tue Jan 07 2020 11:19:57 GMT+0800" />
         <title>${options.title}</title>
-        <style>${printTemplateDefaultStyle + getTemplateToolStyle}</style>
+        <style>${printTemplateDefaultStyle}</style>
+        <style>${getTemplateToolStyle}</style>
       </head>
       <body>
           <article class="print-wrapper" style="width: ${options.width};">
