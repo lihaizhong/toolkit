@@ -254,7 +254,10 @@ class AsyncPrint {
  * @property {boolean} debug 调试模式（默认是false）
  * @property {function} beforeprint 打印前调用的函数 参数 opener 窗口对象
  * @property {function} afterprint 打印后调用的函数 参数 opener 窗口对象
- * @returns {AsyncPrint} AsyncPrint实例 执行打印操作 参数 body 打印内容
+ * @returns {AsyncPrint} AsyncPrint实例
+ * @function exec 执行打印操作
+ * @param {string} body 打印的内容
+ * @function close 关闭打印窗口
  *
  * 注：打印的公共样式可以查看 getTemplateToolStyle 变量
  */
