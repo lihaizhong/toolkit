@@ -170,7 +170,7 @@ class AsyncPrint {
   constructor (opener, options = {}) {
     // 打印页窗口句柄
     this.opener = opener
-    this._options = Object.assign({ title: '打印页', width: '210mm' }, options)
+    this._options = Object.assign({ title: '打印页', width: '210mm', delay: 50 }, options)
   }
 
   exec (body = '') {
@@ -179,10 +179,14 @@ class AsyncPrint {
 
     if (body) {
       options.body = body
-    } else if (!options.body) {
+    }
+
+    if (!options.body) {
       if (typeof opener.close === 'function') {
         opener.close()
       }
+
+      return false
     }
 
     // 生成HTML字符串模板
@@ -223,7 +227,9 @@ class AsyncPrint {
       if (!options.debug && !opener.closed) {
         opener.print()
       }
-    }, options.delay || 50)
+    }, options.delay)
+
+    return true
   }
 
   /**
@@ -248,7 +254,9 @@ class AsyncPrint {
  * @property {boolean} debug 调试模式（默认是false）
  * @property {function} beforeprint 打印前调用的函数 参数 opener 窗口对象
  * @property {function} afterprint 打印后调用的函数 参数 opener 窗口对象
- * @returns {instance} AsyncPrint 执行打印操作 参数 body 打印内容
+ * @returns {AsyncPrint} AsyncPrint实例 执行打印操作 参数 body 打印内容
+ *
+ * 注：打印的公共样式可以查看 getTemplateToolStyle 变量
  */
 export default function print (options = {}) {
   // 打开新窗口
