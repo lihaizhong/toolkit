@@ -167,11 +167,94 @@ function getPrintTemplate (body = '', options = {}) {
   `
 }
 
-class AsyncPrint {
-  constructor (opener, options = {}) {
+function getCommonOpenerHandles (opener) {
+  return {
+    focus () {
+      opener.focus()
+    },
+    print () {
+      if (!opener.closed) {
+        opener.print()
+      }
+    }
+  }
+}
+
+const handler = {
+  createNewPrintWindow () {
     // 打印页窗口句柄
-    this.opener = opener
-    this._options = Object.assign({ title: '打印页', width: '210mm', delay: 50 }, options)
+    const opener = window.open('', '_blank')
+    // 提示等待信息
+    opener.document.body.innerHTML =
+      '<div style="text-align: center; margin: 40px 0;">正在调取打印数据，请稍等...</div>'
+
+    opener.$handle = Object.assign(getCommonOpenerHandles(opener), {
+      write (html) {
+        opener.document.write(html)
+      },
+      insertStyle (style) {
+        const $styleElem = document.createElement('style')
+        $styleElem.innerText = style
+        opener.document.head.appendChild($styleElem)
+      },
+      close () {
+        if (!opener.closed) {
+          opener.close()
+        }
+      }
+    })
+
+    return opener
+  },
+
+  createNewPrintFrame () {
+    // 打印页窗口句柄
+    const opener = document.createElement('iframe')
+    // 设置iframe的链接
+    opener.setAttribute('src', 'about:blank')
+    // 调整frame样式
+    opener.setAttribute('style', 'position: absolute; left: -100000px; top: -10000px; z-index: 0; width: 200px; height: 200px;')
+    // 将iframe插入到document中
+    document.body.appendChild(opener)
+
+    opener.$handle = Object.assign(getCommonOpenerHandles(opener), {
+      write (html) {
+        opener.contentDocument.write(html)
+      },
+      insertStyle (style) {
+        const $styleElem = document.createElement('style')
+        $styleElem.innerText = style
+        opener.contentDocument.head.appendChild($styleElem)
+      },
+      close () {
+        document.body.removeChild(opener)
+      }
+    })
+
+    return opener
+  }
+}
+
+const handlerMinor = {
+  win: 'window',
+  frame: 'iframe'
+}
+
+class AsyncPrint {
+  constructor (options = {}) {
+    this._options = Object.assign({ title: '打印页', width: '210mm', delay: 50, handler: handlerMinor.win }, options)
+    const handlerType = this._options.handler
+
+    switch (handlerType) {
+      case handlerMinor.win:
+        this.opener = handler.createNewPrintWindow()
+        break
+      case handlerMinor.frame:
+        this.opener = handler.createNewPrintFrame()
+        break
+      default:
+        throw new Error(`未知句柄： ${handlerType}`)
+    }
   }
 
   exec (body = '') {
@@ -183,21 +266,18 @@ class AsyncPrint {
     }
 
     if (!options.body) {
-      if (typeof opener.close === 'function') {
-        opener.close()
-      }
-
+      self.close()
       return false
     }
 
     // 生成HTML字符串模板
     const html = getPrintTemplate(options.body, options)
     // 将字符串模板渲染到新窗口中
-    opener.document.write(html)
+    opener.$handle.write(html)
 
     // 触发打印前的回调函数
     opener.onbeforeprint = function () {
-      opener.focus()
+      opener.$handle.focus()
       if (typeof options.beforeprint === 'function') {
         options.beforeprint(opener)
       }
@@ -208,9 +288,10 @@ class AsyncPrint {
       let autoClose = true
 
       if (typeof opener.afterprint === 'function') {
-        autoClose = opener.afterprint(opener)
+        autoClose = options.afterprint(opener)
       }
 
+      // 判断是否自动关闭
       if (autoClose !== false) {
         self.close()
       }
@@ -218,17 +299,13 @@ class AsyncPrint {
 
     // 插入额外的样式
     if (options.extraCSS) {
-      const $style = document.createElement('style')
-      $style.innerText = options.extraCSS
-      opener.document.head.appendChild($style)
+      opener.$handle.insertStyle(options.extraCSS)
     }
 
-    // 延迟调用打印接口
-    setTimeout(() => {
-      if (!options.debug && !opener.closed) {
-        opener.print()
-      }
-    }, options.delay)
+    if (!options.debug) {
+      // 延迟调用打印接口
+      setTimeout(opener.$handle.print, options.delay)
+    }
 
     return true
   }
@@ -237,10 +314,7 @@ class AsyncPrint {
    * 关闭打印页面
    */
   close () {
-    const { opener } = this
-    if (!opener.closed) {
-      opener.close()
-    }
+    this.opener.$handle.close()
   }
 }
 
@@ -263,11 +337,5 @@ class AsyncPrint {
  * 注：打印的公共样式可以查看 getTemplateToolStyle 变量
  */
 export default function print (options = {}) {
-  // 打开新窗口
-  const opener = window.open('', '_blank')
-  // 提示等待信息
-  opener.document.body.innerHTML =
-    '<div style="text-align: center; margin: 40px 0;">正在调取打印数据，请稍等...</div>'
-
-  return new AsyncPrint(opener, options)
+  return new AsyncPrint(options)
 }

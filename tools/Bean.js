@@ -170,6 +170,22 @@ export default class Bean {
     }
   }
 
+  modifyField (key, field) {
+    const config = this[key]
+    config.field = field || key
+    return this
+  }
+
+  setItem (key, value) {
+    if (this.__bean_target__[key] !== undefined) {
+      this.__bean_target__[key] = value
+    }
+  }
+
+  getItem (key) {
+    return this.__bean_target__[key]
+  }
+
   toBean () {
     this._init()
     return this.__bean_target__
