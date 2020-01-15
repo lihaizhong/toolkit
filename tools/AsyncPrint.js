@@ -169,10 +169,27 @@ function getPrintTemplate (body = '', options = {}) {
 
 function getCommonHandles (opener) {
   return {
-    insertStyle (style) {
-      if (style) {
+    insertStyle (cssText) {
+      if (cssText) {
         const $styleElem = document.createElement('style')
-        $styleElem.innerText = style
+        if ($styleElem.styleSheet) {
+          // IE
+          $styleElem.type = 'text/css'
+          const func = function () {
+            // 防止IE中stylesheet数量超过限制而发生错误
+            $styleElem.styleSheet.cssText = cssText
+          }
+          // 如果当前styleSheet还不能用，则放到异步中则行
+          if ($styleElem.styleSheet.disabled) {
+            setTimeout(func, 0)
+          } else {
+            func()
+          }
+        } else {
+          // w3c浏览器中只要创建文本节点插入到style元素中就行了
+          const $textNode = document.createTextNode(cssText)
+          $styleElem.appendChild($textNode)
+        }
         opener.document.head.appendChild($styleElem)
       }
     },
@@ -254,6 +271,10 @@ class AsyncPrint {
       default:
         throw new Error(`未知句柄类型： ${handlerType}`)
     }
+
+    if (this._options.body) {
+      this.exec()
+    }
   }
 
   exec (body = '') {
@@ -334,7 +355,11 @@ class AsyncPrint {
  * @param {string} body 打印的内容
  * @function close 关闭打印窗口
  *
- * 注：打印的公共样式可以查看 getTemplateToolStyle 变量
+ * * 注：
+ * 1. section是关键标签，用来表示A4纸张，请谨慎使用
+ * 2. table，caption都做过处理，可以直接使用而不去设置额外样式
+ * 3. 请使用pt作为单位，因为打印设备真正识别的单位为pt
+ * 4. 打印的公共样式可以查看 getTemplateToolStyle 变量
  */
 export default function print (options = {}) {
   return new AsyncPrint(options)
