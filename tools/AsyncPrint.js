@@ -249,6 +249,10 @@ const handlerMinor = {
 }
 
 export class AsyncPrint {
+  /**
+   * options参数见底部print方法
+   * @param {object} options
+   */
   constructor (options = {}) {
     this.opener = null
     this._options = Object.assign(
