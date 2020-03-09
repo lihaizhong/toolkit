@@ -1,0 +1,30 @@
+{
+  "name": "basic-ui",
+  "version": "1.0.0",
+  "description": "ui framework of Vue",
+  "keywords": [
+    "ui",
+    "vue",
+    "framework"
+  ],
+  "author": "sky <854323752@qq.com>",
+  "homepage": "https://github.com/lihaizhong/toolkit#readme",
+  "license": "ISC",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lihaizhong/toolkit.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "bugs": {
+    "url": "https://github.com/lihaizhong/toolkit/issues"
+  }
+}

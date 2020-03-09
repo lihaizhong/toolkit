@@ -250,6 +250,7 @@ const handlerMinor = {
 
 class AsyncPrint {
   constructor (options = {}) {
+    this.opener = null
     this._options = Object.assign(
       { title: '打印页', width: '210mm', delay: 50, handler: handlerMinor.frame },
       options
@@ -259,6 +260,14 @@ class AsyncPrint {
       this._options = Object.assign(this._options, { handler: handlerMinor.win })
     }
 
+    this.create()
+
+    if (this._options.body) {
+      this.exec()
+    }
+  }
+
+  create () {
     const handlerType = this._options.handler
 
     switch (handlerType) {
@@ -270,10 +279,6 @@ class AsyncPrint {
         break
       default:
         throw new Error(`未知句柄类型： ${handlerType}`)
-    }
-
-    if (this._options.body) {
-      this.exec()
     }
   }
 
