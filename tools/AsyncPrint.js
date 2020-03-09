@@ -248,7 +248,7 @@ const handlerMinor = {
   frame: 'iframe'
 }
 
-class AsyncPrint {
+export class AsyncPrint {
   constructor (options = {}) {
     this.opener = null
     this._options = Object.assign(
@@ -260,14 +260,14 @@ class AsyncPrint {
       this._options = Object.assign(this._options, { handler: handlerMinor.win })
     }
 
-    this.create()
+    this._create()
 
     if (this._options.body) {
       this.exec()
     }
   }
 
-  create () {
+  _create () {
     const handlerType = this._options.handler
 
     switch (handlerType) {
