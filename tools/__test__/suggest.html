@@ -125,10 +125,26 @@
 
     window.onload = function () {
       const $$suggest = document.getElementById('suggestControl')
+      let complete = true;
 
-      $$suggest.addEventListener('input', function () {
-        const value = $$suggest.value
+      function triggerSuggestByKeyword (event) {
+        const value = event.target.value
         generate(suggestList, !!value, value)
+      }
+
+      $$suggest.addEventListener('compositionstart', function (event) {
+        complete = false;
+      })
+
+      $$suggest.addEventListener('input', function(event) {
+        if (complete) {
+          triggerSuggestByKeyword(event)
+        }
+      })
+
+      $$suggest.addEventListener('compositionend', function (event) {
+        complete = true
+        triggerSuggestByKeyword(event)
       })
 
       generate(suggestList, false)

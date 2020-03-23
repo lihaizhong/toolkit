@@ -1,3 +1,5 @@
+import preloadImage from './preloadImage'
+
 /**
  * 数据去重
  * @param {array<any>} target
@@ -14,9 +16,8 @@ function removeDuplicates (target = [], source = [], onCompare) {
       let match = false
       for (let i = 0; i < source.length; i++) {
         const sourceItem = source[i]
-        const result = onCompare(targetItem, sourceItem)
 
-        if (result) {
+        if (onCompare(targetItem, sourceItem)) {
           match = true
           break
         }
@@ -42,7 +43,8 @@ export default class CaptureDataList {
         onCompare: function (target, source) {
           return target === source
         },
-        preloadImage: null
+        beforePreloadImage: null,
+        parsePreloadImagePath: null
       },
       options
     )
@@ -55,26 +57,6 @@ export default class CaptureDataList {
     this.datalist = []
   }
 
-  preloadImage (src) {
-    if (!src) {
-      return Promise.reject(new Error('invalid url'))
-    }
-
-    const image = new Image()
-    image.src = src
-
-    // 图片已加载完成
-    if (image.complete) {
-      return Promise.resolve(src)
-    }
-
-    // 图片未加载完成
-    return new Promise((resolve, reject) => {
-      image.onload = () => resolve(src)
-      image.onerror = reject
-    })
-  }
-
   set (list = []) {
     if (list instanceof Array && list.length) {
       const { onCompare } = this.options
@@ -85,29 +67,29 @@ export default class CaptureDataList {
   }
 
   get () {
-    if (this.datalist.length) {
-      const list = this.datalist.splice(0, this.options.preSize)
-      const { preloadImage: preloadImageForCaptureData } = this.options
+    const list = this.datalist.splice(0, this.options.preSize)
+    const { beforePreloadImage, parsePreloadImagePath } = this.options
 
-      if (typeof this.options.preloadImage === 'function') {
-        return Promise.all(
-          list.map(item => {
-            const imagePath = preloadImageForCaptureData(item)
-            return this.preloadImage(imagePath)
-          })
-        )
-          .catch(() => {})
-          .then(() => {
-            this.usedDataList.push(...list)
-            return list
-          })
-      }
-
-      this.usedDataList.push(...list)
-      return list
+    if (typeof beforePreloadImage === 'function') {
+      beforePreloadImage(list)
     }
 
-    return []
+    if (typeof parsePreloadImagePath === 'function') {
+      return Promise.all(
+        list.map(item => {
+          const imagePath = parsePreloadImagePath(item)
+          return preloadImage(imagePath)
+        })
+      )
+        .catch(() => {})
+        .then(() => {
+          this.usedDataList.push(...list)
+          return list
+        })
+    }
+
+    this.usedDataList.push(...list)
+    return list
   }
 
   hasUnused () {
