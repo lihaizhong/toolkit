@@ -1,5 +1,3 @@
-const WATERMARK_IMAGE = ''
-
 function reduceOptions (options, defaultValue) {
   return Object.keys(options).reduce((acc, key) => {
     const value = options[key]
@@ -27,40 +25,45 @@ function reduceOptions (options, defaultValue) {
  * https://help.aliyun.com/document_detail/44688.html?spm=a2c4g.11186623.6.1314.46e21729yRtkXO
  */
 
-export function handleOSSImage (url) {
-  if (typeof url === 'string' && url !== '') {
-    url = url.replace(/\?.*/, '') + '?x-oss-process=image/format,webp'
-  } else {
-    url = ''
+export class OSSImageHandler {
+  constructor (url, options = {}) {
+    if (typeof url === 'string' && url !== '') {
+      this.url = url.replace(/\?.*/, '') + '?x-oss-process=image/format,webp'
+    } else {
+      this.url = ''
+    }
+
+    this.ossOptions = Object.assign({ watermarks: {} }, options)
   }
 
-  return {
-    resize (options) {
-      if (url) {
-        const opts = Object.assign({}, options)
-        url += reduceOptions(opts, '/resize')
-      }
+  _jointTogether (callback) {
+    this.url && callback()
+    return this
+  }
 
-      return this
-    },
-    watermark () {
-      if (url) {
-        url += `/watermark,image_${WATERMARK_IMAGE},g_se,x_5,y_5`
-      }
+  resize (options) {
+    return this._jointTogether(() => {
+      const opts = Object.assign({}, options)
+      this.url += reduceOptions(opts, '/resize')
+    })
+  }
 
-      return this
-    },
-    crop (options) {
-      if (url) {
-        const opts = Object.assign({ g: 'center' }, options)
-        url += reduceOptions(opts, '/crop')
-      }
+  watermark (type) {
+    return this._jointTogether(() => {
+      const WATERMARK = this.ossOptions.watermarks[type] || this.ossOptions.watermarks.default
+      this.url += `/watermark,image_${WATERMARK},g_se,x_5,y_5`
+    })
+  }
 
-      return this
-    },
-    done () {
-      return url
-    }
+  crop (options) {
+    return this._jointTogether(() => {
+      const opts = Object.assign({ g: 'center' }, options)
+      this.url += reduceOptions(opts, '/crop')
+    })
+  }
+
+  done () {
+    return this.url
   }
 }
 
@@ -75,14 +78,16 @@ export function handleOSSStyle (url, styleName) {
 let installed = false
 
 export default {
-  install (Vue) {
+  install (Vue, options = {}) {
     if (installed) {
       return false
     }
 
     installed = true
 
-    Vue.prototype.$oss = handleOSSImage
+    Vue.prototype.$oss = function (url) {
+      return new OSSImageHandler(url, options)
+    }
     Vue.prototype.$ossStyle = handleOSSStyle
   }
 }

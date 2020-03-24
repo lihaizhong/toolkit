@@ -23,13 +23,13 @@
   "license": "MIT",
   "homepage": "https://github.com/lihaizhong/toolkit/tree/master/packages/themes/vuepress-theme-sky#readme",
   "dependencies": {
-    "@vuepress/plugin-medium-zoom": "^1.2.0",
-    "@vuepress/theme-blog": "^1.3.3",
-    "gitalk": "^1.5.0",
+    "@vuepress/plugin-medium-zoom": "^1.4.0",
+    "@vuepress/theme-blog": "^2.2.0",
+    "gitalk": "^1.6.2",
     "vuepress-plugin-container": "^2.1.2"
   },
   "devDependencies": {
-    "vuepress": "^1.2.0"
+    "vuepress": "^1.4.0"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
