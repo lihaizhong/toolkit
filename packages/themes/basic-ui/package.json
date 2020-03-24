@@ -1,6 +1,7 @@
 {
   "name": "basic-ui",
   "version": "1.0.0",
+  "private": true,
   "description": "ui framework of Vue",
   "keywords": [
     "ui",
