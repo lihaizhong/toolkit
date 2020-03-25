@@ -1,3 +1,9 @@
+/**
+ * 根据关键字信息排序列表，主要用于前端模糊匹配
+ * @author sky
+ * @email 854323752@qq.com
+ */
+
 class ResultWrapper {
   constructor (continuous, count, position, distance) {
     this._options = {
@@ -145,7 +151,7 @@ function levensheinDistance (source, target) {
   return result.get()
 }
 
-class YouNeedSuggest {
+export class YouNeedSuggest {
   /**
    * 编辑距离算法排序
    * @param {array} rowList 待排序的数组
@@ -160,13 +166,13 @@ class YouNeedSuggest {
   constructor (rowList, match, options) {
     this.rowList = rowList
     this.match = match
-    this.defaults = this.setDefaults()
+    this.defaults = this._setDefaults()
     this.options = Object.assign({}, this.defaults, options)
 
     const { keyNameList, weight } = this.options
 
-    this.options.keyNameList = this.parseKeyNameList(keyNameList)
-    this.options.weight = this.parseWeight(weight)
+    this.options.keyNameList = this._parseKeyNameList(keyNameList)
+    this.options.weight = this._parseWeight(weight)
 
     Object.freeze(this.options)
   }
@@ -184,7 +190,7 @@ class YouNeedSuggest {
       const data = this.rowList[i]
 
       // 获取相似度
-      const similarity = this.getMaxSimilarity(data, this.match)
+      const similarity = this._getMaxSimilarity(data, this.match)
 
       // 过滤完全没有匹配到的数据
       if (filterNoMatch && (!isFinite(similarity) || similarity === 0)) {
@@ -212,7 +218,7 @@ class YouNeedSuggest {
   /**
    * 设置默认值
    */
-  setDefaults () {
+  _setDefaults () {
     return {
       keyNameList: ['value'],
       filterNoMatch: true,
@@ -234,7 +240,7 @@ class YouNeedSuggest {
    * 解析权重配置
    * @param {object} weight 权重配置
    */
-  parseWeight (weight) {
+  _parseWeight (weight) {
     if (Object.prototype.toString.call(weight) !== '[object Object]') {
       console.warn('weight 必须是一个对象')
       return Object.assign({}, this.defaults.weight)
@@ -271,7 +277,7 @@ class YouNeedSuggest {
    * @param {string|array} keyNameList
    * @return {array} keyNameList
    */
-  parseKeyNameList (keyNameList) {
+  _parseKeyNameList (keyNameList) {
     if (typeof keyNameList === 'string') {
       return keyNameList.split(',')
     } else if (keyNameList instanceof Array) {
@@ -292,7 +298,7 @@ class YouNeedSuggest {
    * @param {string} target
    * @return {number} similarity 相似度
    */
-  calcSimilarity (data = {}, source, target) {
+  _calcSimilarity (data = {}, source, target) {
     const sourceLength = source.length
     const targetLength = target.length
     const { weight: WEIGHT_CONFIG } = this.options
@@ -313,7 +319,7 @@ class YouNeedSuggest {
    * @param {string} key
    * @return {string} value
    */
-  getValue (target, key) {
+  _getValue (target, key) {
     const keyType = typeof key
     if (
       target !== null &&
@@ -342,7 +348,7 @@ class YouNeedSuggest {
    * @param {string} source 待比较的原始值
    * @return {string} result 转换后的待比较值
    */
-  getCompareValue (source) {
+  _getCompareValue (source) {
     const { caseSensitive } = this.options
     return caseSensitive ? source : source.toLowerCase()
   }
@@ -353,14 +359,14 @@ class YouNeedSuggest {
    * @param {string} match
    * @return {number} 最大相似度
    */
-  getMaxSimilarity (target, match) {
+  _getMaxSimilarity (target, match) {
     const { keyNameList } = this.options
     return keyNameList.reduce((accumulator, currentValue) => {
-      const value = this.getValue(target, currentValue)
+      const value = this._getValue(target, currentValue)
       // 获得变量因子
-      const result = levensheinDistance(this.getCompareValue(match), this.getCompareValue(value))
+      const result = levensheinDistance(this._getCompareValue(match), this._getCompareValue(value))
       // 计算相似度
-      const similarity = this.calcSimilarity(result, match, value)
+      const similarity = this._calcSimilarity(result, match, value)
       // console.log(match, value, similarity, JSON.stringify(result))
 
       if (!isFinite(similarity)) {
