@@ -145,7 +145,7 @@ function getValue (config, data, key) {
   }
 }
 
-export default class Bean {
+export default class BaseBean {
   constructor (data = {}) {
     this.__bean_source__ = data
     this.__bean_target__ = null

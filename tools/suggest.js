@@ -89,7 +89,9 @@ function levensheinDistance (source, target) {
 
       for (let j = 0; j < targetLength; j++) {
         const targetChar = target[j]
+        // 前一个编辑距离
         const prevDistance = j === 0 ? i + 1 : space[j - 1]
+        // 上一个编辑距离
         const topDistance = space[j] === undefined ? j + 1 : space[j]
 
         if (sourceChar === targetChar) {
