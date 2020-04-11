@@ -1,5 +1,5 @@
 <template>
-  <div
+  <section
     id="comments"
     ref="comments"
     class="comments"
