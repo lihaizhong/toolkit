@@ -58,12 +58,16 @@ class ResultWrapper {
 }
 
 /**
- * 编辑距离算法(LD algorithm)
+ * 编辑距离算法(Edit Distance Algorithm)
  * @param {string} source 输入的内容
  * @param {string} target 匹配的目标
  * @return {object}
+ * @property {number} continuous 匹配到的最大长度
+ * @property {number} count 匹配到的个数
+ * @property {number} position 匹配到的位置
+ * @property {number} distance 编辑文本的距离
  */
-function levensheinDistance (source, target) {
+function levenshteinDistance (source, target) {
   const sourceLength = source.length
   const targetLength = target.length
   const space = new Array(targetLength)
@@ -225,16 +229,7 @@ export class YouNeedSuggest {
       keyNameList: ['value'],
       filterNoMatch: true,
       caseSensitive: false,
-      weight: {
-        // 匹配到的最大长度
-        continuous: 40,
-        // 匹配到的个数
-        count: 20,
-        // 匹配到的位置
-        position: 5,
-        // 编辑文本的距离
-        distance: 35
-      }
+      weight: new ResultWrapper(40, 20, 5, 35)
     }
   }
 
@@ -245,7 +240,7 @@ export class YouNeedSuggest {
   _parseWeight (weight) {
     if (Object.prototype.toString.call(weight) !== '[object Object]') {
       console.warn('weight 必须是一个对象')
-      return Object.assign({}, this.defaults.weight)
+      return this.defaults.weight.get()
     }
 
     const keywords = ['continuous', 'count', 'position', 'distance']
@@ -255,7 +250,7 @@ export class YouNeedSuggest {
 
       if (typeof weight[keyword] !== 'number') {
         console.warn(`【weight】${keyword}必须是一个数字`)
-        return Object.assign({}, this.defaults.weight)
+        return this.defaults.weight.get()
       }
     }
 
@@ -263,12 +258,7 @@ export class YouNeedSuggest {
       console.warn('关键字continuous, count, position, distance的值相加必须等于100')
       const { continuous, count, position, distance } = weight
       const rate = 100 / (continuous + count + position + distance)
-      return {
-        continuous: continuous * rate,
-        count: count * rate,
-        position: position * rate,
-        distance: distance * rate
-      }
+      return new ResultWrapper(continuous * rate, count * rate, position * rate, distance * rate)
     }
 
     return weight
@@ -309,8 +299,6 @@ export class YouNeedSuggest {
       (1 - data.position / targetLength) * WEIGHT_CONFIG.position +
       (data.continuous / targetLength) * WEIGHT_CONFIG.continuous +
       (data.count / targetLength) * WEIGHT_CONFIG.count
-
-    // console.log(source, target, data, similarity)
 
     return similarity
   }
@@ -366,10 +354,9 @@ export class YouNeedSuggest {
     return keyNameList.reduce((accumulator, currentValue) => {
       const value = this._getValue(target, currentValue)
       // 获得变量因子
-      const result = levensheinDistance(this._getCompareValue(match), this._getCompareValue(value))
+      const result = levenshteinDistance(this._getCompareValue(match), this._getCompareValue(value))
       // 计算相似度
       const similarity = this._calcSimilarity(result, match, value)
-      // console.log(match, value, similarity, JSON.stringify(result))
 
       if (!isFinite(similarity)) {
         return accumulator
