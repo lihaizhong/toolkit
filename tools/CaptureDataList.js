@@ -1,5 +1,3 @@
-import preloadImage from './preloadImage'
-
 /**
  * 数据去重
  * @param {array<any>} target
@@ -43,8 +41,7 @@ export default class CaptureDataList {
         onCompare: function (target, source) {
           return target === source
         },
-        beforePreloadImage: null,
-        parsePreloadImagePath: null
+        transform: null
       },
       options
     )
@@ -68,24 +65,13 @@ export default class CaptureDataList {
 
   get () {
     const list = this.datalist.splice(0, this.options.preSize)
-    const { beforePreloadImage, parsePreloadImagePath } = this.options
+    const { transform } = this.options
 
-    if (typeof beforePreloadImage === 'function') {
-      beforePreloadImage(list)
-    }
-
-    if (typeof parsePreloadImagePath === 'function') {
-      return Promise.all(
-        list.map(item => {
-          const imagePath = parsePreloadImagePath(item)
-          return preloadImage(imagePath)
-        })
-      )
-        .catch(() => {})
-        .then(() => {
-          this.usedDataList.push(...list)
-          return list
-        })
+    if (typeof transform === 'function') {
+      return transform(list).then(columns => {
+        this.usedDataList.push(...columns)
+        return columns
+      })
     }
 
     this.usedDataList.push(...list)
