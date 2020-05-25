@@ -48,6 +48,7 @@
   <script type="module" crossorigin>
     import suggest from '../suggest.js'
 
+    const MATCH_CN_ZH_EXP = new RegExp('\\p{Unified_Ideograph}', 'u')
     const suggestList = [
       { code: 'ZXBZJXX', name: '装修保证金（小写）' },
       { code: 'ZXBZJXXUP', name: '装修保证金（大写）' },
@@ -119,8 +120,21 @@
     }
 
     function generate(suggestList, filterNoMatch, value = '') {
-      const list = suggest(suggestList, value, { keyNameList: ['name', 'code'], filterNoMatch })
-      generatorResultDisplay(list)
+      if (value === '' && filterNoMatch) {
+          generatorResultDisplay([])
+      } else {
+        let keyNameList = ['name']
+
+        // 如果没有匹配到了汉字
+        if (!(value === '' ||MATCH_CN_ZH_EXP.test(value))) {
+          keyNameList.push('code')
+        }
+
+        const list = suggest(suggestList, value, { keyNameList, filterNoMatch })
+        generatorResultDisplay(list)
+      }
+
+
     }
 
     window.onload = function () {
@@ -128,7 +142,7 @@
       let complete = true;
 
       function triggerSuggestByKeyword (event) {
-        const value = event.target.value
+        const value = event.target.value.trim()
         generate(suggestList, !!value, value)
       }
 

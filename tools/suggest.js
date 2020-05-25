@@ -187,7 +187,7 @@ export class YouNeedSuggest {
    * 获取建议的结果
    */
   get () {
-    const { filterNoMatch } = this.options
+    const { filterNoMatch, minSimilarity } = this.options
     const len = this.rowList.length
     const result = []
 
@@ -199,7 +199,7 @@ export class YouNeedSuggest {
       const similarity = this._getMaxSimilarity(data, this.match)
 
       // 过滤完全没有匹配到的数据
-      if (filterNoMatch && (!isFinite(similarity) || similarity === 0)) {
+      if (filterNoMatch && (!isFinite(similarity) || similarity <= minSimilarity)) {
         continue
       }
 
@@ -226,10 +226,25 @@ export class YouNeedSuggest {
    */
   _setDefaults () {
     return {
+      // 进行匹配的字段
       keyNameList: ['value'],
+      // 是否过滤相似度为0的数据
       filterNoMatch: true,
+      // 是否区分大小写
       caseSensitive: false,
-      weight: new ResultWrapper(40, 20, 5, 35)
+      // 最小相似度
+      minSimilarity: 0,
+      // 设置权重
+      weight: {
+        // 最大的匹配词长度权重
+        continuous: 40,
+        // 匹配词总个数权重
+        count: 20,
+        // 首个匹配字符的位置权重
+        position: 5,
+        // 最短编辑路径权重
+        distance: 35
+      }
     }
   }
 
@@ -238,27 +253,39 @@ export class YouNeedSuggest {
    * @param {object} weight 权重配置
    */
   _parseWeight (weight) {
+    // 检查权重属性是否为对象
     if (Object.prototype.toString.call(weight) !== '[object Object]') {
       console.warn('weight 必须是一个对象')
-      return this.defaults.weight.get()
+      return this.defaults.weight
     }
 
     const keywords = ['continuous', 'count', 'position', 'distance']
 
+    // 检查权重是否都为数字
     for (let i = 0; i < keywords.length; i++) {
       const keyword = keywords[i]
 
       if (typeof weight[keyword] !== 'number') {
         console.warn(`【weight】${keyword}必须是一个数字`)
-        return this.defaults.weight.get()
+        return this.defaults.weight
       }
     }
 
+    // 检查权重相加是否等于100
     if (keywords.reduce((acc, keyword) => acc + weight[keyword], 0) !== 100) {
-      console.warn('关键字continuous, count, position, distance的值相加必须等于100')
+      console.warn('【weight】关键字continuous, count, position, distance的值相加必须等于100')
       const { continuous, count, position, distance } = weight
       const rate = 100 / (continuous + count + position + distance)
-      return new ResultWrapper(continuous * rate, count * rate, position * rate, distance * rate)
+      return {
+        // 最大的匹配词长度权重
+        continuous: continuous * rate,
+        // 匹配词总个数权重
+        count: count * rate,
+        // 首个匹配字符的位置权重
+        position: position * rate,
+        // 最短编辑路径权重
+        distance: distance * rate
+      }
     }
 
     return weight
