@@ -18,7 +18,7 @@
     }
   },
   "packages": [
-    "packages/themes/*",
-    "packages/tools/*"
+    "packages/tools/*",
+    "packages/themes/*"
   ]
 }

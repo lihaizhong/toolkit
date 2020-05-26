@@ -1,0 +1,25 @@
+{
+  "name": "cherry",
+  "version": "1.0.0",
+  "description": "web键盘工具",
+  "author": "sky <854323752@qq.com>",
+  "homepage": "https://github.com/lihaizhong/toolkit#readme",
+  "license": "ISC",
+  "main": "index.ts",
+  "directories": {
+    "test": "__tests__"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lihaizhong/toolkit.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "bugs": {
+    "url": "https://github.com/lihaizhong/toolkit/issues"
+  }
+}

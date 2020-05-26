@@ -1,4 +1,3 @@
-export { default as cardValidator } from './cardValidator'
 export { default as maxlengthValidator } from './maxlengthValidator'
 export { default as phoneValidator } from './phoneValidator'
 export { default as identityValidator } from './identityValidator'
