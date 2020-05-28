@@ -55,6 +55,6 @@ class ResultWrapper implements IFuzzyResultWrapper {
   }
 }
 
-export default class Fuzzy implements IFuzzy {
-
+namespace Utility {
+  export function calc() {}
 }

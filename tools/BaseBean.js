@@ -55,9 +55,9 @@ function deepClone (target) {
 function getDefaultValue (type, defaultValue, placeholderValue) {
   if (isSameType(defaultValue, type)) {
     return defaultValue
-  } else {
-    return placeholderValue
   }
+
+  return placeholderValue
 }
 
 /**
@@ -72,14 +72,18 @@ function parseFieldValue (target, field, key) {
 
     if (typeOfField === 'string') {
       return target[field]
-    } else if (typeOfField === 'function') {
+    }
+
+    if (typeOfField === 'function') {
       return field(target)
     }
-  } else if (key) {
+  }
+
+  if (key) {
     return target[key]
   }
 
-  return undefined
+  return target
 }
 
 /**
@@ -89,7 +93,9 @@ const valueParser = {
   typeOfString (fieldValue, defaultValue) {
     if (isSameType(fieldValue, String)) {
       return fieldValue
-    } else if (isSameType(fieldValue, Number)) {
+    }
+
+    if (isSameType(fieldValue, Number)) {
       return fieldValue.toString()
     }
 
@@ -98,7 +104,9 @@ const valueParser = {
   typeOfNumber (fieldValue, defaultValue) {
     if (isSameType(fieldValue, Number)) {
       return fieldValue
-    } else if (isSameType(fieldValue, String) && /^\d+$/(fieldValue)) {
+    }
+
+    if (isSameType(fieldValue, String) && /^\d+$/(fieldValue)) {
       return Number(fieldValue)
     }
 
@@ -132,6 +140,8 @@ function getValue (config, data, key) {
   const fieldValue = parseFieldValue(data, field, key)
 
   switch (type) {
+    case Any:
+      return fieldValue
     case String:
       return valueParser.typeOfString(fieldValue, getDefaultValue(type, defaultValue, ''))
     case Number:
@@ -141,11 +151,13 @@ function getValue (config, data, key) {
     case Array:
       return valueParser.typeOfArray(itemType, fieldValue, getDefaultValue(type, defaultValue, []))
     default:
-      return valueParser.typeOfDefault(type, data)
+      return valueParser.typeOfDefault(type, fieldValue)
   }
 }
 
-export default class BaseBean {
+export class Any {}
+
+export default class Bean {
   constructor (data = {}) {
     this.__bean_source__ = data
     this.__bean_target__ = null
@@ -155,7 +167,7 @@ export default class BaseBean {
 
   _init () {
     if (!this.__bean_target__) {
-      const keys = this.__bean_keys__ = Object.keys(this).filter(key => !/^__bean_/.test(key))
+      const keys = (this.__bean_keys__ = Object.keys(this).filter(key => !/^__bean_/.test(key)))
       const data = this.__bean_source__
 
       this.__bean_target__ = {}
@@ -196,7 +208,7 @@ export default class BaseBean {
     return Object.preventExtensions(source)
   }
 
-  restore () {
+  reset () {
     this._init()
     const bean = JSON.parse(this.__bean_raw_target)
     this.__bean_target__ = Object.preventExtensions(bean)

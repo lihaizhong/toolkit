@@ -4,7 +4,7 @@ export default class Keyword implements IKeyword {
   lock: boolean
   disabled: boolean
 
-  constructor(key: string | number, value: string | number, options: IKeywordOptions) {
+  constructor(key: string | number, value: string | number, options: IKeywordOptions = { lock: false, disabled: false }) {
     this.key = key;
     this.value = value;
     this.lock = options.lock;

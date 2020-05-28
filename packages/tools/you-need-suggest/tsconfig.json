@@ -1,3 +1,13 @@
 {
-  "module": "commonjs"
+  "module": "commonjs",
+  "target": "es2017",
+  "removeComments": true,
+  "sourceMap": true,
+  "outDir": "./dist",
+  "baseUrl": "./",
+  "incremental": true,
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }
