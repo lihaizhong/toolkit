@@ -42,7 +42,8 @@ export function parseFunction (fn, ...args) {
 export function completeSync (callback) {
   return new Promise((resolve, reject) => {
     const errors = callback()
-    if (errors instanceof Array && errors.length) {
+
+    if (errors instanceof Error || (errors instanceof Array && errors.length)) {
       reject(errors)
     } else {
       resolve()
