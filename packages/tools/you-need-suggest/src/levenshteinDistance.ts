@@ -165,13 +165,10 @@ namespace Utility {
     return result.get()
   }
   export function calc(sourceLength, targetLength, data: TResult, weight: TResult): number {
-    const similarity =
-      (1 - data.distance / Math.max(sourceLength, targetLength)) * weight.distance +
+    return (1 - data.distance / Math.max(sourceLength, targetLength)) * weight.distance +
       (1 - data.position / targetLength) * weight.position +
       (data.continuous / targetLength) * weight.continuous +
       (data.count / targetLength) * weight.count
-
-    return similarity
   }
 }
 

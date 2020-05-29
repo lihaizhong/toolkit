@@ -9,16 +9,13 @@ interface IOptions {
 }
 
 interface IYouNeedSuggest {
-  value: string
-  list: string[] | object[]
-  options: IOptions
   get(value: string): any[]
 }
 
 export default class YouNeedSuggest implements IYouNeedSuggest {
-  value
-  list
-  options = {
+  private keyNameList: string[]
+  private list: string[] | object[]
+  private options: IOptions = {
     // 进行匹配的字段
     keyNameList: ['value'],
     // 是否过滤相似度为0的数据
@@ -43,10 +40,10 @@ export default class YouNeedSuggest implements IYouNeedSuggest {
   constructor(list: string[] | object[], options: IOptions) {
     this.list = list
     this.options = Object.assign(this.options, options)
-    this.options.keyNameList = this.parseKeyNameList(this.options.keyNameList)
+    this.keyNameList = this.parseKeyNameList(this.options.keyNameList)
   }
 
-  get(value): any[] {
+  get(value) {
     const result = []
     value = this.parseValue(value)
 
@@ -90,7 +87,7 @@ export default class YouNeedSuggest implements IYouNeedSuggest {
       return this.options.compare(this.parseValue(match), value)
     }
 
-    return this.options.keyNameList.reduce((lastSimilarity, key) => {
+    return this.keyNameList.reduce((lastSimilarity, key) => {
       const source = this.parseValue(match[key])
       const currentSimilarity = this.options.compare(source, value)
 
