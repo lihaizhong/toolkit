@@ -164,20 +164,20 @@ namespace Utility {
 
     return result.get()
   }
-  export function calc(sourceLength, targetLength, data: TResult, options: TResult): number {
+  export function calc(sourceLength, targetLength, data: TResult, weight: TResult): number {
     const similarity =
-      (1 - data.distance / Math.max(sourceLength, targetLength)) * options.distance +
-      (1 - data.position / targetLength) * options.position +
-      (data.continuous / targetLength) * options.continuous +
-      (data.count / targetLength) * options.count
+      (1 - data.distance / Math.max(sourceLength, targetLength)) * weight.distance +
+      (1 - data.position / targetLength) * weight.position +
+      (data.continuous / targetLength) * weight.continuous +
+      (data.count / targetLength) * weight.count
 
     return similarity
   }
 }
 
-export default function compare(options: TResult): any {
+export default function compare(weight: TResult): any {
   return function compare_inner(source: string, target: string) {
     const result = Utility.levenshteinDistance(source, target)
-    return Utility.calc(source.length, target.length, result, options)
+    return Utility.calc(source.length, target.length, result, weight)
   }
 }
