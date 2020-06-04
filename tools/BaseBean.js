@@ -119,6 +119,13 @@ const valueParser = {
 
     return defaultValue
   },
+  typeOfObject (fieldValue, defaultValue) {
+    if (isSameType(fieldValue, Object)) {
+      return fieldValue
+    }
+
+    return defaultValue
+  },
   typeOfArray (type, fieldValue, defaultValue) {
     return (fieldValue || defaultValue).map(value => getValue({ type }, value))
   },
@@ -150,6 +157,8 @@ function getValue (config, data, key) {
       return valueParser.typeOfBoolean(fieldValue, getDefaultValue(type, defaultValue, null))
     case Array:
       return valueParser.typeOfArray(itemType, fieldValue, getDefaultValue(type, defaultValue, []))
+    case Object:
+      return valueParser.typeOfObject(fieldValue, getDefaultValue(type, defaultValue, {}))
     default:
       return valueParser.typeOfDefault(type, fieldValue)
   }
