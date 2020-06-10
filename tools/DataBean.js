@@ -166,7 +166,7 @@ function getValue (config, data, key) {
 
 export class Any {}
 
-export default class Bean {
+export default class DataBean {
   constructor (data = {}) {
     this.__bean_source__ = data
     this.__bean_target__ = null
