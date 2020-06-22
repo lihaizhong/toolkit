@@ -166,12 +166,13 @@ function getValue (config, data, key) {
 
 export class Any {}
 
-export default class DataBean {
-  constructor (data = {}) {
+export default class FormDataBean {
+  constructor (data = {}, transfer = true) {
     this.__bean_source__ = data
     this.__bean_target__ = null
     this.__bean_raw_target = ''
     this.__bean_keys__ = []
+    this.__bean_transfer__ = transfer
   }
 
   _init () {
@@ -191,12 +192,6 @@ export default class DataBean {
     }
   }
 
-  modifyField (key, field) {
-    const config = this[key]
-    config.field = field || key
-    return this
-  }
-
   setItem (key, value) {
     if (this.__bean_target__[key] !== undefined) {
       this.__bean_target__[key] = value
@@ -212,20 +207,9 @@ export default class DataBean {
     return this.__bean_target__
   }
 
-  toSource () {
-    const source = deepClone(this.__bean_source__)
-    return Object.preventExtensions(source)
-  }
-
   reset () {
     this._init()
     const bean = JSON.parse(this.__bean_raw_target)
     this.__bean_target__ = Object.preventExtensions(bean)
-  }
-
-  clone () {
-    this._init()
-    const bean = deepClone(this.__bean_target__)
-    return Object.preventExtensions(bean)
   }
 }
