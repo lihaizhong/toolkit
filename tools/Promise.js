@@ -46,6 +46,52 @@ function nextTick (fn) {
  * Promise实现
  */
 export default class IPromise {
+  static all (promises) {
+    return promises.reduce(
+      (acc, promise) =>
+        acc.then((values) => {
+          if (promise instanceof this.constructor) {
+            return promise.then(value =>
+              values.concat([value])
+            )
+          }
+
+          return this.constructor.resolve(promise)
+        }),
+      this.constructor.resolve([])
+    )
+  }
+
+  static race (promises) {
+    return new this.constructor((resolve, reject) => {
+      promises.forEach(promise =>
+        promise.then(value =>
+          resolve(value), error => reject(error)
+        )
+      )
+    })
+  }
+
+  /**
+   * 静态成功操作
+   * @param {Function | isThenable} value
+   * @return {Promise}
+   */
+  static resolve (value) {
+    if (isThenable(value)) return value
+    return new this.constructor(resolve => resolve(value))
+  }
+
+  /**
+   * 静态失败操作
+   * @param {any} error
+   * @return {Promise}
+   */
+  static reject (error) {
+    if (isThenable(error)) return error
+    return new this.constructor((_resolve, reject) => reject(error))
+  }
+
   /**
    * 构造函数
    * @param {Function} resolver
@@ -138,66 +184,6 @@ export default class IPromise {
     }
 
     nextTick(run)
-  }
-
-  /**
-   * 静态成功操作
-   * @param {Function | isThenable} value
-   * @return {Promise}
-   */
-  static resolve (value) {
-    if (isThenable(value)) return value
-    return new this.constructor(resolve => resolve(value))
-  }
-
-  /**
-   * 静态失败操作
-   * @param {any} error
-   * @return {Promise}
-   */
-  static reject (error) {
-    if (isThenable(error)) return error
-    return new this.constructor((_resolve, reject) => reject(error))
-  }
-
-  /**
-   * 返回其中一个已完成的操作
-   * @param {Array<Promise>} list
-   * @return {Promise}
-   */
-  static race (list) {
-    return new this.constructor((resolve, reject) =>
-      list.forEach(p => {
-        p.then(
-          value => resolve(value),
-          error => reject(error)
-        )
-      })
-    )
-  }
-
-  /**
-   * 所有操作合并
-   * @param {Array<Promise>} list
-   * @return {Promise}
-   */
-  static all (list) {
-    return new this.constructor((resolve, reject) => {
-      const values = []
-      let count = 0
-
-      list.forEach((p, i) =>
-        p.then(
-          value => {
-            values[i] = value
-            count++
-
-            count === list.length && resolve(values)
-          },
-          error => reject(error)
-        )
-      )
-    })
   }
 
   /**
