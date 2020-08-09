@@ -1,4 +1,10 @@
 /**
+ * Promise实现
+ * 英文原版网址：https://promisesaplus.com/
+ * 中文翻译网址：https://www.ituring.com.cn/article/66566
+ */
+
+/**
  * 状态枚举
  */
 const PROMISE_STATUS = {
@@ -43,6 +49,19 @@ function nextTick (fn) {
 }
 
 /**
+ * 清空执行函数
+ * @params fns
+ * @params value
+ */
+function flushSchedulerQueue (fns, value) {
+  let fn
+
+  while ((fn = fns.shift())) {
+    fn(value)
+  }
+}
+
+/**
  * Promise实现
  */
 export default class IPromise {
@@ -50,24 +69,22 @@ export default class IPromise {
     return promises.reduce(
       (acc, promise) =>
         acc.then((values) => {
-          if (promise instanceof this.constructor) {
+          if (promise instanceof IPromise) {
             return promise.then(value =>
               values.concat([value])
             )
           }
 
-          return this.constructor.resolve(promise)
+          return IPromise.resolve(promise)
         }),
-      this.constructor.resolve([])
+      IPromise.resolve([])
     )
   }
 
   static race (promises) {
-    return new this.constructor((resolve, reject) => {
+    return new IPromise((resolve, reject) => {
       promises.forEach(promise =>
-        promise.then(value =>
-          resolve(value), error => reject(error)
-        )
+        promise.then(resolve, reject)
       )
     })
   }
@@ -79,7 +96,7 @@ export default class IPromise {
    */
   static resolve (value) {
     if (isThenable(value)) return value
-    return new this.constructor(resolve => resolve(value))
+    return new IPromise(resolve => resolve(value))
   }
 
   /**
@@ -89,7 +106,7 @@ export default class IPromise {
    */
   static reject (error) {
     if (isThenable(error)) return error
-    return new this.constructor((_resolve, reject) => reject(error))
+    return new IPromise((resolve, reject) => reject(error))
   }
 
   /**
@@ -102,11 +119,8 @@ export default class IPromise {
     }
 
     this._status = PROMISE_STATUS.PENDING
-
     this._value = null
-
     this._fulfilledQueues = []
-
     this._rejectedQueues = []
 
     try {
@@ -125,21 +139,8 @@ export default class IPromise {
     if (this._status !== PROMISE_STATUS.PENDING) return
 
     const run = () => {
-      const onFulfilled = value => {
-        let cb
-
-        while ((cb = this._fulfilledQueues.shift())) {
-          cb(value)
-        }
-      }
-
-      const onRejected = error => {
-        let cb
-
-        while ((cb = this._rejectedQueues.shift())) {
-          cb(error)
-        }
-      }
+      const onFulfilled = value => flushSchedulerQueue(this._fulfilledQueues, value)
+      const onRejected = error => flushSchedulerQueue(this._rejectedQueues, error)
 
       if (isThenable(val)) {
         val.then(
