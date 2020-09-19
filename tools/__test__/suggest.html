@@ -108,15 +108,26 @@
     ]
 
     function generatorResultDisplay(list) {
-      const $$result = document.getElementById('suggestResult')
+      const $result = document.getElementById('suggestResult')
 
-      let html = `<table border="1"><tr><th align="left">名称</th><th align="left">代码</th><th align="left">相似度</th></tr>`
-
-      html += list.map(({ code, name, __similarity__ }) => `<tr><td>${name}</td><td>${code}</td><td>${__similarity__}</td></tr>`).join('')
-
-      html += '</table>'
-
-      $$result.innerHTML = html
+      $result.innerHTML = `
+        <table border="1">
+          <tr>
+            <th align="left">名称</th>
+            <th align="left">代码</th>
+            <th align="left">相似度</th>
+          </tr>
+          ${
+            list.map(({ code, name, __similarity__ }) => `
+              <tr>
+                <td>${name}</td>
+                <td>${code}</td>
+                <td>${__similarity__}</td>
+              </tr>
+            `).join('')
+          }
+        </table>
+      `
     }
 
     function generate(suggestList, filterNoMatch, value = '') {
@@ -138,7 +149,7 @@
     }
 
     window.onload = function () {
-      const $$suggest = document.getElementById('suggestControl')
+      const $suggest = document.getElementById('suggestControl')
       let complete = true;
 
       function triggerSuggestByKeyword (event) {
@@ -146,17 +157,17 @@
         generate(suggestList, !!value, value)
       }
 
-      $$suggest.addEventListener('compositionstart', function (event) {
+      $suggest.addEventListener('compositionstart', function (event) {
         complete = false;
       })
 
-      $$suggest.addEventListener('input', function(event) {
+      $suggest.addEventListener('input', function(event) {
         if (complete) {
           triggerSuggestByKeyword(event)
         }
       })
 
-      $$suggest.addEventListener('compositionend', function (event) {
+      $suggest.addEventListener('compositionend', function (event) {
         complete = true
         triggerSuggestByKeyword(event)
       })
@@ -172,7 +183,6 @@
   </div>
 
   <div id="suggestResult" class="suggest-result-wrap"></div>
-
 </body>
 
 </html>
