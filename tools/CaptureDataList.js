@@ -8,29 +8,27 @@ function removeDuplicates (target = [], source = [], onCompare) {
   const targetLength = target.length
   const sourceLength = source.length
 
-  if (targetLength && sourceLength) {
-    const list = []
-    target.forEach(targetItem => {
-      let match = false
-      for (let i = 0; i < source.length; i++) {
-        const sourceItem = source[i]
-
-        if (onCompare(targetItem, sourceItem)) {
-          match = true
-          break
-        }
-      }
-
-      // 如果没有重复数据，就插入
-      if (!match) {
-        list.push(targetItem)
-      }
-    })
-
-    return list
+  if (!targetLength) {
+    return []
   }
 
-  return [...target]
+  if (!sourceLength) {
+    return [...target]
+  }
+
+  return target.filter(targetItem => {
+    let match = false
+    for (let i = 0; i < sourceLength; i++) {
+      const sourceItem = source[i]
+
+      if (onCompare(targetItem, sourceItem)) {
+        match = true
+        break
+      }
+    }
+
+    return !match
+  })
 }
 
 export default class CaptureDataList {
@@ -54,7 +52,7 @@ export default class CaptureDataList {
     this.datalist = []
   }
 
-  set (list = []) {
+  input (list = []) {
     if (list instanceof Array && list.length) {
       const { onCompare } = this.options
       const uniqueList1 = removeDuplicates(list, this.usedDataList, onCompare)
@@ -63,19 +61,23 @@ export default class CaptureDataList {
     }
   }
 
-  get () {
+  output () {
     const list = this.datalist.splice(0, this.options.preSize)
     const { transform } = this.options
+    let promise = null
 
     if (typeof transform === 'function') {
-      return transform(list).then(columns => {
-        this.usedDataList.push(...columns)
-        return columns
-      })
+      promise = transform(list)
     }
 
-    this.usedDataList.push(...list)
-    return list
+    if (!(promise instanceof Promise)) {
+      promise = Promise.resolve(list)
+    }
+
+    return promise.then(columns => {
+      this.usedDataList.push(...columns)
+      return columns
+    })
   }
 
   hasUnused () {
