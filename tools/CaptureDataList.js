@@ -2,9 +2,9 @@
  * 数据去重
  * @param {array<any>} target
  * @param {array<any>} source
- * @param {function} onCompare
+ * @param {function} equal
  */
-function removeDuplicates (target = [], source = [], onCompare) {
+function removeDuplicates (target = [], source = [], equal) {
   const targetLength = target.length
   const sourceLength = source.length
 
@@ -16,19 +16,12 @@ function removeDuplicates (target = [], source = [], onCompare) {
     return [...target]
   }
 
-  return target.filter(targetItem => {
-    let match = false
-    for (let i = 0; i < sourceLength; i++) {
-      const sourceItem = source[i]
-
-      if (onCompare(targetItem, sourceItem)) {
-        match = true
-        break
-      }
-    }
-
-    return !match
-  })
+  return target.filter(targetItem =>
+    source.every(
+      sourceItem =>
+        !equal(targetItem, sourceItem)
+    )
+  )
 }
 
 export default class CaptureDataList {
