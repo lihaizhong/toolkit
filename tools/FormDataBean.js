@@ -19,11 +19,19 @@ function isSameType (value, type) {
   }
 }
 
+function hasOwnProperty (target, key) {
+  return Object.prototype.hasOwnProperty.call(target, key)
+}
+
+function isReservedProperty (name) {
+  return !/^__bean_/.test(name)
+}
+
 /**
  * 设置默认值
  * @param {any} type 数据类型
  * @param {any} defaultValue 用户定义的默认数值
- * @param {any} placeholderValue 默认数值
+ * @param {any} placeholderValue 系统定义的默认数值
  */
 function getDefaultValue (type, defaultValue, placeholderValue) {
   if (isSameType(defaultValue, type)) {
@@ -140,17 +148,16 @@ function getValue (config, data, key) {
 export class Any {}
 
 export default class FormDataBean {
-  constructor (data = {}, transfer = true) {
+  constructor (data = {}) {
     this.__bean_source__ = data
     this.__bean_target__ = null
     this.__bean_raw_target = ''
     this.__bean_keys__ = []
-    this.__bean_transfer__ = transfer
   }
 
   _init () {
     if (!this.__bean_target__) {
-      const keys = (this.__bean_keys__ = Object.keys(this).filter(key => !/^__bean_/.test(key)))
+      const keys = (this.__bean_keys__ = Object.keys(this).filter(key => isReservedProperty(key)))
       const data = this.__bean_source__
 
       this.__bean_target__ = {}
@@ -166,12 +173,14 @@ export default class FormDataBean {
   }
 
   setItem (key, value) {
-    if (this.__bean_target__[key] !== undefined) {
+    this._init()
+    if (isReservedProperty(key) && hasOwnProperty(this.__bean_target__, key) && isSameType(value, this[key].type)) {
       this.__bean_target__[key] = value
     }
   }
 
   getItem (key) {
+    this._init()
     return this.__bean_target__[key]
   }
 
