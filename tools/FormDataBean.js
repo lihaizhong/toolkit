@@ -131,15 +131,31 @@ function getValue (config, data, key) {
     case Any:
       return fieldValue
     case String:
-      return valueParser.typeOfString(fieldValue, getDefaultValue(type, defaultValue, ''))
+      return valueParser.typeOfString(
+        fieldValue,
+        getDefaultValue(type, defaultValue, '')
+      )
     case Number:
-      return valueParser.typeOfNumber(fieldValue, getDefaultValue(type, defaultValue, null))
+      return valueParser.typeOfNumber(
+        fieldValue,
+        getDefaultValue(type, defaultValue, null)
+      )
     case Boolean:
-      return valueParser.typeOfBoolean(fieldValue, getDefaultValue(type, defaultValue, null))
+      return valueParser.typeOfBoolean(
+        fieldValue,
+        getDefaultValue(type, defaultValue, null)
+      )
     case Array:
-      return valueParser.typeOfArray(itemType, fieldValue, getDefaultValue(type, defaultValue, []))
+      return valueParser.typeOfArray(
+        itemType,
+        fieldValue,
+        getDefaultValue(type, defaultValue, [])
+      )
     case Object:
-      return valueParser.typeOfObject(fieldValue, getDefaultValue(type, defaultValue, {}))
+      return valueParser.typeOfObject(
+        fieldValue,
+        getDefaultValue(type, defaultValue, {})
+      )
     default:
       return valueParser.typeOfDefault(type, fieldValue)
   }
@@ -157,14 +173,18 @@ export default class FormDataBean {
 
   _init () {
     if (!this.__bean_target__) {
-      const keys = (this.__bean_keys__ = Object.keys(this).filter(key => isReservedProperty(key)))
+      const keys = (this.__bean_keys__ = Object.keys(this).filter(
+        key => isReservedProperty(key))
+      )
       const data = this.__bean_source__
 
       this.__bean_target__ = {}
       for (let i = 0; i < keys.length; i++) {
         const key = keys[i]
         const config = this[key] || {}
-        this.__bean_target__[key] = getValue(config, data, key)
+        if (typeof config === 'object') {
+          this.__bean_target__[key] = getValue(config, data, key)
+        }
       }
 
       this.__bean_raw_target = JSON.stringify(this.__bean_target__)
@@ -174,7 +194,11 @@ export default class FormDataBean {
 
   setItem (key, value) {
     this._init()
-    if (isReservedProperty(key) && hasOwnProperty(this.__bean_target__, key) && isSameType(value, this[key].type)) {
+    if (
+      isReservedProperty(key) &&
+      hasOwnProperty(this.__bean_target__, key) &&
+      isSameType(value, this[key].type)
+    ) {
       this.__bean_target__[key] = value
     }
   }
