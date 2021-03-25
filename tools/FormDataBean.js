@@ -4,6 +4,7 @@
  *  - itemType {any} 必填（数组），表示数组子集类型
  *  - defaultValue {string} 选填，表示默认值，如果不指定，Bean类会根据类型指定字符串
  *  - field {string|function} 选填，表示后台对应的字段，如果不指定，就是当前的key。field可以是一个方法，参数为data，主要用于自定义数据
+ *  - reverseField {function} 选填，只有在field为function时，需要将当前的值返还给field字段，用于后台提交，参数为data
  */
 
 /**
@@ -87,7 +88,7 @@ const valueParser = {
       return fieldValue
     }
 
-    if (isSameType(fieldValue, String) && /^\d+$/(fieldValue)) {
+    if (isSameType(fieldValue, String) && /^\d+$/.test(fieldValue)) {
       return Number(fieldValue)
     }
 
@@ -171,29 +172,26 @@ export default class FormDataBean {
     this.__bean_keys__ = []
   }
 
-  _init () {
-    if (!this.__bean_target__) {
-      const keys = (this.__bean_keys__ = Object.keys(this).filter(
-        key => isReservedProperty(key))
-      )
-      const data = this.__bean_source__
+  init () {
+    const keys = (this.__bean_keys__ = Object.keys(this).filter(
+      key => isReservedProperty(key))
+    )
+    const data = this.__bean_source__
 
-      this.__bean_target__ = {}
-      for (let i = 0; i < keys.length; i++) {
-        const key = keys[i]
-        const config = this[key] || {}
-        if (typeof config === 'object') {
-          this.__bean_target__[key] = getValue(config, data, key)
-        }
+    this.__bean_target__ = {}
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i]
+      const config = this[key] || {}
+      if (typeof config === 'object') {
+        this.__bean_target__[key] = getValue(config, data, key)
       }
-
-      this.__bean_raw_target = JSON.stringify(this.__bean_target__)
-      Object.preventExtensions(this.__bean_target__)
     }
+
+    this.__bean_raw_target = JSON.stringify(this.__bean_target__)
+    Object.preventExtensions(this.__bean_target__)
   }
 
   setItem (key, value) {
-    this._init()
     if (
       isReservedProperty(key) &&
       hasOwnProperty(this.__bean_target__, key) &&
@@ -204,17 +202,14 @@ export default class FormDataBean {
   }
 
   getItem (key) {
-    this._init()
     return this.__bean_target__[key]
   }
 
-  toBean () {
-    this._init()
+  valueOf () {
     return this.__bean_target__
   }
 
   reset () {
-    this._init()
     const bean = JSON.parse(this.__bean_raw_target)
     this.__bean_target__ = Object.preventExtensions(bean)
   }
