@@ -1,8 +1,8 @@
 import { isReservedProperty, hasOwnProperty, isSameType } from './utils/tools'
-import getValue from './utils/getValue'
+import { getValue } from './utils/parser'
 import { IStore } from './typings'
 
-export default class FormDataBean {
+export default class FormTransfer {
   private __bean_source__: IStore = null
   private __bean_target__: IStore = null
   private __bean_raw_target: string = ''
@@ -48,7 +48,7 @@ export default class FormDataBean {
     return this.__bean_target__
   }
 
-  originValueOf() {}
+  restoreValueOf () {}
 
   reset () {
     const bean = JSON.parse(this.__bean_raw_target)

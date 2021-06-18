@@ -166,29 +166,22 @@ export class Any {}
 
 export default class FormDataBean {
   constructor (data = {}) {
-    this.__bean_source__ = data
-    this.__bean_target__ = null
-    this.__bean_raw_target = ''
-    this.__bean_keys__ = []
-  }
+    const target = this.__bean_target__ = {}
+    const keys = Object
+      .keys(this)
+      .filter(
+        key => isReservedProperty(key)
+      )
 
-  init () {
-    const keys = (this.__bean_keys__ = Object.keys(this).filter(
-      key => isReservedProperty(key))
-    )
-    const data = this.__bean_source__
-
-    this.__bean_target__ = {}
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i]
       const config = this[key] || {}
       if (typeof config === 'object') {
-        this.__bean_target__[key] = getValue(config, data, key)
+        target[key] = getValue(config, data, key)
       }
     }
 
-    this.__bean_raw_target = JSON.stringify(this.__bean_target__)
-    Object.preventExtensions(this.__bean_target__)
+    Object.preventExtensions(target)
   }
 
   setItem (key, value) {
@@ -207,10 +200,5 @@ export default class FormDataBean {
 
   valueOf () {
     return this.__bean_target__
-  }
-
-  reset () {
-    const bean = JSON.parse(this.__bean_raw_target)
-    this.__bean_target__ = Object.preventExtensions(bean)
   }
 }
