@@ -5,7 +5,7 @@
  */
 export const isSameType = (value: any, type: any) =>
   value === null || value === undefined ?
-    false :
+    value === type :
     value.constructor.toString() === type.toString()
 
 export const hasOwnProperty = (

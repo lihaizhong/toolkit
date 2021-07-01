@@ -7,25 +7,28 @@
  *  - reverseField {function} 选填，只有在field为function时，需要将当前的值返还给field字段，用于后台提交，参数为data
  */
 
-/**
- * 判断数值类型是否为指定类型
- * @param {any} value 数值
- * @param {any} type 数据类型
- */
-function isSameType (value, type) {
-  if (value === null || value === undefined) {
-    return false
-  } else {
-    return value.constructor.toString() === type.toString()
+const Utils = {
+
+  /**
+   * 判断数值类型是否为指定类型
+   * @param {any} value 数值
+   * @param {any} type 数据类型
+   */
+  isSameType (value, type) {
+    if (value === null || value === undefined) {
+      return value === type
+    } else {
+      return value.constructor.toString() === type.toString()
+    }
+  },
+
+  hasOwn (target, key) {
+    return Object.prototype.hasOwnProperty.call(target, key)
+  },
+
+  isReservedProperty (name) {
+    return !/^__bean_/.test(name)
   }
-}
-
-function hasOwnProperty (target, key) {
-  return Object.prototype.hasOwnProperty.call(target, key)
-}
-
-function isReservedProperty (name) {
-  return !/^__bean_/.test(name)
 }
 
 /**
@@ -35,7 +38,7 @@ function isReservedProperty (name) {
  * @param {any} placeholderValue 系统定义的默认数值
  */
 function getDefaultValue (type, defaultValue, placeholderValue) {
-  if (isSameType(defaultValue, type)) {
+  if (Utils.isSameType(defaultValue, type)) {
     return defaultValue
   }
 
@@ -73,36 +76,36 @@ function parseFieldValue (target, field, key) {
  */
 const valueParser = {
   typeOfString (fieldValue, defaultValue) {
-    if (isSameType(fieldValue, String)) {
+    if (Utils.isSameType(fieldValue, String)) {
       return fieldValue
     }
 
-    if (isSameType(fieldValue, Number)) {
+    if (Utils.isSameType(fieldValue, Number)) {
       return fieldValue.toString()
     }
 
     return defaultValue
   },
   typeOfNumber (fieldValue, defaultValue) {
-    if (isSameType(fieldValue, Number)) {
+    if (Utils.isSameType(fieldValue, Number)) {
       return fieldValue
     }
 
-    if (isSameType(fieldValue, String) && /^\d+$/.test(fieldValue)) {
+    if (Utils.isSameType(fieldValue, String) && /^\d+$/.test(fieldValue)) {
       return Number(fieldValue)
     }
 
     return defaultValue
   },
   typeOfBoolean (fieldValue, defaultValue) {
-    if (isSameType(fieldValue, Boolean)) {
+    if (Utils.isSameType(fieldValue, Boolean)) {
       return fieldValue
     }
 
     return defaultValue
   },
   typeOfObject (fieldValue, defaultValue) {
-    if (isSameType(fieldValue, Object)) {
+    if (Utils.isSameType(fieldValue, Object)) {
       return fieldValue
     }
 
@@ -162,7 +165,7 @@ function getValue (config, data, key) {
   }
 }
 
-export class Any {}
+export class Any { }
 
 export default class FormDataBean {
   constructor (data = {}) {
@@ -170,7 +173,7 @@ export default class FormDataBean {
     const keys = Object
       .keys(this)
       .filter(
-        key => isReservedProperty(key)
+        key => Utils.isReservedProperty(key)
       )
 
     for (let i = 0; i < keys.length; i++) {
@@ -186,9 +189,9 @@ export default class FormDataBean {
 
   setItem (key, value) {
     if (
-      isReservedProperty(key) &&
-      hasOwnProperty(this.__bean_target__, key) &&
-      isSameType(value, this[key].type)
+      Utils.isReservedProperty(key) &&
+      Utils.hasOwn(this.__bean_target__, key) &&
+      Utils.isSameType(value, this[key].type)
     ) {
       this.__bean_target__[key] = value
     }
